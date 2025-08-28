@@ -1,0 +1,231 @@
+/* Estilos Gerais */
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --background-color: #f0f2f5;
+    --sidebar-bg: #fff;
+    --text-color: #333;
+    --card-bg: #fff;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: var(--background-color);
+    margin: 0;
+    color: var(--text-color);
+    display: flex;
+}
+
+/* --- ESTRUTURA PRINCIPAL (DESKTOP) --- */
+
+.sidebar {
+    width: 250px;
+    background-color: var(--sidebar-bg);
+    height: 100vh;
+    position: fixed;
+    left: 0; /* Posição padrão para desktop */
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    padding-top: 20px;
+    z-index: 1000;
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Animação suave */
+}
+
+.sidebar-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 0 20px;
+}
+
+.sidebar-header h2 {
+    color: var(--primary-color);
+    margin: 0;
+}
+
+.sidebar-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-nav a {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 20px;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.sidebar-nav a:hover,
+.sidebar-nav a.active {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.main-content {
+    margin-left: 250px;
+    width: calc(100% - 250px);
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    margin: 0;
+}
+
+.user-info a {
+    color: var(--secondary-color);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+.user-info a:hover {
+    color: var(--primary-color);
+}
+
+
+.desktop-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.desktop-card {
+    background-color: var(--card-bg);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+}
+
+/* --- VERSÃO MOBILE (LAYOUT DE APLICATIVO) --- */
+
+.mobile-header, .mobile-buttons {
+    display: none; /* Escondido por padrão */
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 998;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s ease, visibility 0s 0.4s;
+}
+
+.overlay.show {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.4s ease;
+}
+
+
+@media (max-width: 768px) {
+    body {
+        /* Remove o flex para empilhar os elementos naturalmente */
+        display: block;
+    }
+    
+    /* --- SIDEBAR INVERTIDA (DIREITA PARA ESQUERDA) --- */
+    .sidebar {
+        left: auto; /* Remove o 'left' */
+        right: 0;   /* Posiciona na direita */
+        width: 65%; /* Ocupa metade direita da tela */
+        transform: translateX(100%); /* Começa fora da tela, à direita */
+    }
+
+    .sidebar.open {
+        transform: translateX(0); /* Entra na tela */
+    }
+
+    /* --- AJUSTES DE CONTEÚDO --- */
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 0; /* Remove padding para os botões ocuparem tudo */
+    }
+
+    .header {
+        display: none; /* Esconde o header de desktop */
+    }
+    
+    .desktop-cards {
+        display: none; /* Esconde os cards de desktop */
+    }
+
+    /* --- HEADER E BOTÕES MOBILE --- */
+    .mobile-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        background-color: var(--sidebar-bg);
+        box-shadow: var(--shadow);
+        position: sticky;
+        top: 0;
+        z-index: 900;
+    }
+
+    .mobile-header h2 {
+        color: var(--primary-color);
+        margin: 0;
+    }
+
+    #menu-toggle {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        z-index: 1001; /* Garante que o botão fique acima de tudo */
+        transition: transform 0.3s ease;
+    }
+    
+    /* Melhora a animação de clique */
+    #menu-toggle:active {
+        transform: scale(0.9);
+    }
+    
+    .mobile-buttons {
+        display: flex;
+        flex-direction: column; /* Empilha os botões */
+    }
+    
+    .mobile-button {
+        background-color: #fff;
+        border: none;
+        border-bottom: 1px solid #f0f2f5; /* Linha sutil de separação */
+        padding: 20px 15px;
+        text-align: left;
+        width: 100%;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+    
+    /* Efeito de toque no botão */
+    .mobile-button:active {
+        background-color: #f9f9f9;
+    }
+    
+    .mobile-button h3 {
+        margin: 0 0 5px 0;
+        font-size: 1.1em;
+        color: var(--primary-color);
+    }
+    
+    .mobile-button p {
+        margin: 0;
+        color: var(--secondary-color);
+    }
+}

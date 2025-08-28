@@ -1,0 +1,352 @@
+/* Estilos Padrão para o Módulo Diário de Bordo */
+:root {
+    --diario-primary-color: #007bff;
+    --diario-background: #f0f2f5;
+    --diario-header-bg: #ffffff;
+    --diario-card-bg: #ffffff;
+    --diario-text-color: #333;
+    --diario-text-light: #6c757d;
+    --diario-border-color: #dee2e6;
+    --diario-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: var(--diario-background);
+    margin: 0;
+    padding: 0;
+}
+
+/* Container principal que centraliza o conteúdo em telas maiores */
+.diario-container {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: var(--diario-card-bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* Cabeçalho fixo no topo */
+.diario-header {
+    background-color: var(--diario-header-bg);
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--diario-border-color);
+    box-shadow: var(--diario-shadow);
+    display: flex;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.diario-header .back-button {
+    color: var(--diario-text-color);
+    font-size: 1.2rem;
+    text-decoration: none;
+    margin-right: 15px;
+}
+
+.diario-header h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--diario-text-color);
+}
+
+/* Conteúdo principal rolável */
+.diario-content {
+    padding: 20px;
+    flex-grow: 1; /* Faz o conteúdo ocupar o espaço disponível */
+}
+
+/* Estilos para os formulários */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: var(--diario-text-light);
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid var(--diario-border-color);
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 1rem;
+}
+
+.form-group input[readonly] {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--diario-primary-color);
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+
+/* Rodapé fixo na base */
+.diario-footer {
+    background-color: var(--diario-header-bg);
+    padding: 15px 20px;
+    border-top: 1px solid var(--diario-border-color);
+    box-shadow: var(--diario-shadow);
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--diario-primary-color);
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:disabled {
+    background-color: #a0c9f7;
+    cursor: not-allowed;
+}
+
+.btn-primary:not(:disabled):hover {
+    background-color: #0056b3;
+}
+
+/* Mensagens de erro */
+#vehicle-error {
+    color: #dc3545;
+    font-weight: bold;
+    margin-top: 15px;
+    text-align: center;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+/* --- ESTILOS PARA A PÁGINA DE CHECKLIST --- */
+
+.checklist-item {
+    padding: 15px;
+    border: 1px solid var(--diario-border-color);
+    border-radius: 8px;
+    margin-bottom: 15px;
+    transition: box-shadow 0.3s;
+}
+
+.checklist-item.status-attention {
+    border-left: 5px solid #ffc107; /* Amarelo */
+}
+
+.checklist-item.status-problem {
+    border-left: 5px solid #dc3545; /* Vermelho */
+}
+
+.checklist-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+}
+
+.status-options {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.status-options input[type="radio"] {
+    display: none; /* Esconde o rádio original */
+}
+
+.status-options label {
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    text-align: center;
+    flex-grow: 1;
+    transition: all 0.3s ease;
+}
+
+/* Estilo Padrão */
+.status-options label {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+/* Estilo quando selecionado */
+.status-options input[type="radio"]:checked + label {
+    color: #fff;
+}
+.status-options input[value="ok"]:checked + label {
+    background-color: #28a745; /* Verde */
+}
+.status-options input[value="attention"]:checked + label {
+    background-color: #ffc107; /* Amarelo */
+}
+.status-options input[value="problem"]:checked + label {
+    background-color: #dc3545; /* Vermelho */
+}
+
+.problem-details {
+    display: none; /* Escondido por padrão */
+    margin-top: 15px;
+}
+
+.problem-details textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--diario-border-color);
+    border-radius: 8px;
+    box-sizing: border-box;
+    min-height: 80px;
+    font-size: 1rem;
+}
+
+/* --- ESTILOS PARA A PÁGINA DE FINALIZAR --- */
+.run-summary {
+    background-color: var(--diario-background);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+.summary-item:last-child {
+    border-bottom: none;
+}
+.summary-item strong {
+    color: var(--diario-text-light);
+}
+.summary-item span {
+    color: var(--diario-text-color);
+    font-weight: bold;
+}
+
+/* Estilos para a seção de abastecimento */
+.fueling-section {
+    margin-top: 25px;
+    border-top: 1px solid var(--diario-border-color);
+    padding-top: 25px;
+}
+.fueling-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+.fueling-toggle h3 {
+    margin: 0;
+    color: var(--diario-primary-color);
+}
+#fueling-form-container {
+    display: none; /* Começa escondido */
+    margin-top: 20px;
+}
+.fueling-tabs {
+    display: flex;
+    margin-bottom: 15px;
+}
+.fueling-tabs button {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--diario-border-color);
+    background-color: #f8f9fa;
+    cursor: pointer;
+    font-weight: bold;
+}
+.fueling-tabs button.active {
+    background-color: var(--diario-primary-color);
+    color: #fff;
+    border-color: var(--diario-primary-color);
+}
+.fueling-tab-content {
+    display: none; /* Esconde as abas por padrão */
+}
+.fueling-tab-content.active {
+    display: block; /* Mostra a aba ativa */
+}
+/* --- ESTILOS PARA UPLOAD DE ARQUIVO COM PREVIEW --- */
+.file-upload-wrapper {
+    border: 2px dashed var(--diario-border-color);
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    position: relative;
+    transition: border-color 0.3s;
+}
+.file-upload-wrapper:hover {
+    border-color: var(--diario-primary-color);
+}
+.file-upload-wrapper input[type="file"] {
+    display: none;
+}
+.file-preview-container {
+    margin-top: 15px;
+    position: relative;
+    display: none; /* Começa escondido */
+}
+.file-preview-container img {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+}
+.file-remove-btn {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+/* Estilo para a mensagem de feedback do abastecimento */
+#fueling-feedback.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 15px;
+    text-align: center;
+}
+#fueling-feedback.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 15px;
+    text-align: center;
+}

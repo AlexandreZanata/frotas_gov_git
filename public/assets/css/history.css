@@ -1,0 +1,161 @@
+/* Estilos para a página de Histórico de Corridas */
+:root {
+    --primary-color: #007bff;
+    --background-color: #f0f2f5;
+    --card-bg: #fff;
+    --text-color: #333;
+    --text-light: #6c757d;
+    --border-color: #dee2e6;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: var(--background-color);
+    margin: 0;
+    color: var(--text-color);
+}
+
+.history-container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 20px;
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.history-header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+}
+
+.btn-pdf {
+    background-color: #dc3545;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s;
+}
+
+.btn-pdf:hover {
+    background-color: #c82333;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.history-table th, .history-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.history-table thead th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    color: var(--text-light);
+}
+
+.history-table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+.no-runs-message {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-light);
+}
+
+.back-link {
+    display: inline-block;
+    margin-top: 20px;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    .history-container {
+        margin: 10px;
+        padding: 15px;
+    }
+
+    .history-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .history-table {
+        display: block;
+        overflow-x: auto;
+    }
+}
+
+
+.filter-form {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+    margin-bottom: 25px;
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.filter-form .form-group {
+    flex-grow: 1;
+}
+
+.filter-form label {
+    font-weight: bold;
+    font-size: 0.9em;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.filter-form input[type="date"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-filter {
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s;
+}
+
+.btn-filter:hover {
+    background-color: #0056b3;
+}
