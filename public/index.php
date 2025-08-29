@@ -107,7 +107,8 @@ $router->get('sector-manager/records/run/history', 'RecordController@runHistory'
 $router->get('sector-manager/ajax/search-runs', 'RecordController@ajax_search_runs');
 $router->post('sector-manager/ajax/get-run', 'RecordController@ajax_get_run');
 $router->get('sector-manager/ajax/search-drivers', 'RecordController@ajax_search_drivers');
-$router->get('sector-manager/ajax/record-vehicle-search', 'RecordController@ajax_search_vehicles');
+// Rota específica para buscar veículos na tela de registros de corrida
+$router->get('sector-manager/ajax/search-vehicles-for-run', 'RecordController@ajax_search_vehicles');
 
 
 // Ações de CRUD para Corridas

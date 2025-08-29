@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         vehicleDebounceTimer = setTimeout(async () => {
             try {
-                const response = await fetch(`${BASE_URL}/sector-manager/ajax/search-vehicles?term=${encodeURIComponent(term)}`);
+                const response = await fetch(`${BASE_URL}/sector-manager/ajax/search-vehicles-for-run?term=${encodeURIComponent(term)}`);
                 const result = await response.json();
                 
                 if (result.success && result.data && result.data.length > 0) {
