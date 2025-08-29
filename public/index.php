@@ -110,12 +110,28 @@ $router->get('sector-manager/ajax/search-drivers', 'RecordController@ajax_search
 // Rota específica para buscar veículos na tela de registros de corrida
 $router->get('sector-manager/ajax/search-vehicles-for-run', 'RecordController@ajax_search_vehicles');
 
+// <-- ADICIONE ESTA LINHA PARA AUTOCOMPLETE DE "ASSOCIAR CORRIDA" -->
+$router->get('sector-manager/ajax/search-runs-for-fueling', 'RecordController@ajax_search_runs_for_fueling');
 
 // Ações de CRUD para Corridas
 $router->post('sector-manager/records/run/store', 'RecordController@storeRun');
 $router->post('sector-manager/records/run/update', 'RecordController@updateRun');
 $router->post('sector-manager/records/run/delete', 'RecordController@deleteRun');
 
+//ROTAS DE EDIÇÃO DE ABASTECIMENTOS 
+// Ações de CRUD para Abastecimentos
+$router->post('sector-manager/records/fueling/store', 'RecordController@storeFueling');
+$router->post('sector-manager/records/fueling/update', 'RecordController@updateFueling');
+$router->post('sector-manager/records/fueling/delete', 'RecordController@deleteFueling');
+
+// Endpoints AJAX para Abastecimentos
+$router->get('sector-manager/ajax/search-fuelings', 'RecordController@ajax_search_fuelings');
+$router->post('sector-manager/ajax/get-fueling', 'RecordController@ajax_get_fueling');
+
+// Rota para o histórico de registros
+$router->get('sector-manager/records/history', 'RecordController@recordsHistory');
+//EDIÇÃO DE ABASTEICMENTO ACIMA
+$router->post('sector-manager/ajax/get-fuel-price', 'RecordController@ajax_get_fuel_price');
 
 
 // Ajax para gestão de usuários
