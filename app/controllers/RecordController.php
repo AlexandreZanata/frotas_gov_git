@@ -33,15 +33,19 @@ class RecordController
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
         }
 
-        $vehiclesStmt = $this->conn->prepare("SELECT id, name, prefix FROM vehicles WHERE current_secretariat_id = ? ORDER BY name ASC");
-        $vehiclesStmt->execute([$this->secretariatId]);
-
-        // Não buscamos mais todos os motoristas aqui - será feito via AJAX
+        // Buscar o nome da secretaria se ainda não estiver na sessão
+        if (empty($_SESSION['user_secretariat_name'])) {
+            $stmt = $this->conn->prepare("SELECT name FROM secretariats WHERE id = ?");
+            $stmt->execute([$this->secretariatId]);
+            // Define um nome padrão caso não encontre
+            $_SESSION['user_secretariat_name'] = $stmt->fetchColumn() ?: 'Secretaria Atual';
+        }
+        
+        // A busca de veículos e motoristas agora é feita via AJAX
         $fuelTypesStmt = $this->conn->query("SELECT id, name FROM fuel_types ORDER BY name ASC");
 
         $data = [
             'csrf_token' => $_SESSION['csrf_token'],
-            'vehicles' => $vehiclesStmt->fetchAll(),
             'fuel_types' => $fuelTypesStmt->fetchAll()
         ];
 
@@ -77,6 +81,7 @@ class RecordController
                 "INSERT INTO runs (vehicle_id, driver_id, secretariat_id, start_km, end_km, start_time, end_time, destination, stop_point, status) 
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
             );
+            // Garante que a corrida seja inserida na secretaria correta
             $stmt->execute([$vehicle_id, $driver_id, $this->secretariatId, $start_km, $end_km, $start_time, $end_time, $destination, $stop_point, $status]);
             $lastId = $this->conn->lastInsertId();
 
@@ -106,7 +111,7 @@ class RecordController
             exit();
         }
 
-        // Verificar se a corrida pertence à secretaria do usuário
+        // Garante que a corrida a ser atualizada pertence à secretaria do usuário
         $stmt = $this->conn->prepare("SELECT * FROM runs WHERE id = ? AND secretariat_id = ?");
         $stmt->execute([$runId, $this->secretariatId]);
         $oldData = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -139,31 +144,15 @@ class RecordController
             
             $stmt = $this->conn->prepare(
                 "UPDATE runs SET 
-                    vehicle_id = ?, 
-                    driver_id = ?, 
-                    start_km = ?, 
-                    end_km = ?, 
-                    start_time = ?, 
-                    end_time = ?, 
-                    destination = ?, 
-                    stop_point = ?, 
-                    status = ?,
-                    updated_at = NOW()
-                WHERE id = ? AND secretariat_id = ?"
+                    vehicle_id = ?, driver_id = ?, start_km = ?, end_km = ?, 
+                    start_time = ?, end_time = ?, destination = ?, stop_point = ?, 
+                    status = ?, updated_at = NOW()
+                WHERE id = ? AND secretariat_id = ?" // Dupla verificação de segurança
             );
             
             $stmt->execute([
-                $vehicle_id, 
-                $driver_id, 
-                $start_km, 
-                $end_km, 
-                $start_time, 
-                $end_time, 
-                $destination, 
-                $stop_point, 
-                $status,
-                $runId,
-                $this->secretariatId
+                $vehicle_id, $driver_id, $start_km, $end_km, $start_time, 
+                $end_time, $destination, $stop_point, $status, $runId, $this->secretariatId
             ]);
 
             $this->auditLog->log($_SESSION['user_id'], 'update_run', 'runs', $runId, $oldData, $_POST);
@@ -193,6 +182,7 @@ class RecordController
 
         try {
             $this->conn->beginTransaction();
+            // Garante que a corrida a ser excluída pertence à secretaria do usuário
             $stmt = $this->conn->prepare("SELECT * FROM runs WHERE id = ? AND secretariat_id = ?");
             $stmt->execute([$runId, $this->secretariatId]);
             $runData = $stmt->fetch();
@@ -229,35 +219,50 @@ class RecordController
         echo json_encode(['success' => true, 'data' => $result]);
     }
     
-    // NOVO MÉTODO: Busca de motoristas
     public function ajax_search_drivers()
     {
         header('Content-Type: application/json');
-        
         $term = isset($_GET['term']) ? trim($_GET['term']) : '';
         if (empty($term)) {
             echo json_encode(['success' => false, 'message' => 'Termo de busca vazio']);
             return;
         }
         
-        $sql = "SELECT id, name FROM users 
-                WHERE secretariat_id = ? AND status = 'active' 
-                AND (role_id = 1 OR role_id = 3) 
-                AND name LIKE ? 
+        $sql = "SELECT id, name, email FROM users 
+                WHERE secretariat_id = ? AND status = 'active' AND (role_id = 1 OR role_id = 3) 
+                AND (name LIKE ? OR email LIKE ?) 
+                ORDER BY CASE WHEN name LIKE ? THEN 0 WHEN name LIKE ? THEN 1 ELSE 2 END, name ASC 
+                LIMIT 10";
+        
+        $stmt = $this->conn->prepare($sql);
+        $params = [$this->secretariatId, "%$term%", "%$term%", "$term%", "% $term%"];
+        $stmt->execute($params);
+        
+        echo json_encode(['success' => true, 'data' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+    }
+
+    public function ajax_search_vehicles()
+    {
+        header('Content-Type: application/json');
+        $term = isset($_GET['term']) ? trim($_GET['term']) : '';
+        if (empty($term)) {
+            echo json_encode(['success' => false, 'message' => 'Termo de busca vazio']);
+            return;
+        }
+        
+        $sql = "SELECT id, name, prefix FROM vehicles 
+                WHERE current_secretariat_id = ? AND (name LIKE ? OR prefix LIKE ?) 
                 ORDER BY name ASC LIMIT 10";
         
         $stmt = $this->conn->prepare($sql);
-        $stmt->execute([$this->secretariatId, "%$term%"]);
-        $drivers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt->execute([$this->secretariatId, "%$term%", "%$term%"]);
         
-        echo json_encode(['success' => true, 'data' => $drivers]);
+        echo json_encode(['success' => true, 'data' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
     }
-    
-    // NOVO MÉTODO: Obter dados de uma corrida específica
+
     public function ajax_get_run()
     {
         header('Content-Type: application/json');
-        
         if (!isset($_POST['run_id'])) {
             echo json_encode(['success' => false, 'message' => 'ID de corrida não fornecido']);
             return;
@@ -265,7 +270,7 @@ class RecordController
         
         $runId = filter_input(INPUT_POST, 'run_id', FILTER_VALIDATE_INT);
         
-        $sql = "SELECT r.*, v.prefix as vehicle_prefix, u.name as driver_name 
+        $sql = "SELECT r.*, v.prefix as vehicle_prefix, v.name as vehicle_name, u.name as driver_name 
                 FROM runs r 
                 JOIN vehicles v ON r.vehicle_id = v.id
                 JOIN users u ON r.driver_id = u.id
@@ -287,11 +292,13 @@ class RecordController
     {
         $offset = ($page - 1) * $perPage;
 
+        // Contagem de corridas filtrada pela secretaria do usuário
         $countStmt = $this->conn->prepare("SELECT COUNT(id) FROM runs WHERE secretariat_id = ?");
         $countStmt->execute([$this->secretariatId]);
         $totalResults = $countStmt->fetchColumn();
         $totalPages = ceil($totalResults / $perPage);
 
+        // Busca de corridas filtrada pela secretaria do usuário
         $sql = "SELECT r.id, r.start_time, r.destination, r.start_km, r.end_km, v.prefix as vehicle_prefix, u.name as driver_name 
                 FROM runs r 
                 JOIN vehicles v ON r.vehicle_id = v.id

@@ -13,11 +13,25 @@ class DashboardController
     {
         Auth::checkAuthentication();
 
-        if (isset($_SESSION['user_role_id']) && $_SESSION['user_role_id'] == 2) { // Role 'sector_manager'
-            $this->loadAdminDashboard();
-        } else {
-            require_once __DIR__ . '/../../templates/pages/dashboard.php';
+        // Verifica se a role do usuário está definida na sessão
+        if (isset($_SESSION['user_role_id'])) {
+            
+            // Se for Gestor Geral (role_id 1), carrega o dashboard de admin.
+            if ($_SESSION['user_role_id'] == 1) { 
+                $this->loadAdminDashboard();
+                return; // Encerra a execução aqui
+            }
+            
+            // Se for Gestor Setorial (role_id 2), redireciona para a área correta.
+            if ($_SESSION['user_role_id'] == 2) {
+                // Redireciona para uma página padrão do gestor setorial, como o gerenciamento de veículos.
+                header('Location: ' . BASE_URL . '/sector-manager/vehicles');
+                exit();
+            }
         }
+        
+        // Para todas as outras roles (ex: motorista), carrega o dashboard padrão.
+        require_once __DIR__ . '/../../templates/pages/dashboard.php';
     }
 
     private function loadAdminDashboard()

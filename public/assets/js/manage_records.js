@@ -28,14 +28,68 @@ document.addEventListener('DOMContentLoaded', () => {
         }[match]));
     };
 
-    // --- BUSCA INTELIGENTE DE MOTORISTA ---
+    // --- BUSCA INTELIGENTE DE VEÍCULOS ---
+    const vehicleSearchInput = document.getElementById('vehicle_search');
+    const vehicleIdInput = document.getElementById('run_vehicle_id');
+    const vehicleResultsDiv = document.getElementById('vehicle_search_results');
+    let vehicleDebounceTimer;
+
+    vehicleSearchInput.addEventListener('input', () => {
+        clearTimeout(vehicleDebounceTimer);
+        const term = vehicleSearchInput.value.trim();
+        
+        if (term.length < 2) {
+            vehicleResultsDiv.innerHTML = '';
+            vehicleResultsDiv.style.display = 'none';
+            return;
+        }
+        
+        vehicleDebounceTimer = setTimeout(async () => {
+            try {
+                const response = await fetch(`${BASE_URL}/sector-manager/ajax/search-vehicles?term=${encodeURIComponent(term)}`);
+                const result = await response.json();
+                
+                if (result.success && result.data && result.data.length > 0) {
+                    vehicleResultsDiv.innerHTML = result.data.map(vehicle => 
+                        `<div data-id="${vehicle.id}" data-prefix="${escapeHTML(vehicle.prefix)}" data-name="${escapeHTML(vehicle.name)}" class="vehicle-result">
+                            ${escapeHTML(vehicle.prefix)} - ${escapeHTML(vehicle.name)}
+                        </div>`
+                    ).join('');
+                    vehicleResultsDiv.style.display = 'block';
+                } else {
+                    vehicleResultsDiv.innerHTML = '<div>Nenhum veículo encontrado</div>';
+                    vehicleResultsDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Erro ao buscar veículos:', error);
+                vehicleResultsDiv.innerHTML = '<div>Erro ao buscar veículos</div>';
+                vehicleResultsDiv.style.display = 'block';
+            }
+        }, 300);
+    });
+
+    // Selecionar veículo da busca
+    vehicleResultsDiv.addEventListener('click', (e) => {
+        const vehicleDiv = e.target.closest('.vehicle-result');
+        if (vehicleDiv) {
+            const vehicleId = vehicleDiv.dataset.id;
+            const vehiclePrefix = vehicleDiv.dataset.prefix;
+            const vehicleName = vehicleDiv.dataset.name;
+            
+            vehicleIdInput.value = vehicleId;
+            vehicleSearchInput.value = `${vehiclePrefix} - ${vehicleName}`;
+            vehicleResultsDiv.style.display = 'none';
+        }
+    });
+
+    // --- BUSCA INTELIGENTE DE MOTORISTA (OTIMIZADA) ---
     const driverSearchInput = document.getElementById('driver_search');
     const driverIdInput = document.getElementById('run_driver_id');
     const driverResultsDiv = document.getElementById('driver_search_results');
-    let debounceTimer;
+    let driverDebounceTimer;
 
     driverSearchInput.addEventListener('input', () => {
-        clearTimeout(debounceTimer);
+        clearTimeout(driverDebounceTimer);
         const term = driverSearchInput.value.trim();
         
         if (term.length < 2) {
@@ -44,14 +98,17 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        debounceTimer = setTimeout(async () => {
+        driverDebounceTimer = setTimeout(async () => {
             try {
                 const response = await fetch(`${BASE_URL}/sector-manager/ajax/search-drivers?term=${encodeURIComponent(term)}`);
                 const result = await response.json();
                 
                 if (result.success && result.data && result.data.length > 0) {
                     driverResultsDiv.innerHTML = result.data.map(driver => 
-                        `<div data-id="${driver.id}" data-name="${escapeHTML(driver.name)}" class="driver-result">${escapeHTML(driver.name)}</div>`
+                        `<div data-id="${driver.id}" data-name="${escapeHTML(driver.name)}" class="driver-result">
+                            ${escapeHTML(driver.name)}
+                            ${driver.email ? `<div class="search-item-details">${escapeHTML(driver.email)}</div>` : ''}
+                        </div>`
                     ).join('');
                     driverResultsDiv.style.display = 'block';
                 } else {
@@ -81,7 +138,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Esconder resultados quando clicar fora
     document.addEventListener('click', (e) => {
-        if (!e.target.closest('.search-results-wrapper')) {
+        if (!e.target.closest('#vehicle_search_results') && !e.target.closest('#vehicle_search')) {
+            vehicleResultsDiv.style.display = 'none';
+        }
+        if (!e.target.closest('#driver_search_results') && !e.target.closest('#driver_search')) {
             driverResultsDiv.style.display = 'none';
         }
     });
@@ -165,7 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(modal) modal.style.display = 'none';
     };
     
-    // Edição de corrida
+    // Edição de corrida - atualizado para usar a busca de veículos
     const fillRunForm = async (runId) => {
         try {
             // Configurar o formulário para edição
@@ -193,9 +253,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const run = result.data;
             
             // Preencher os campos
-            document.getElementById('run_vehicle_id').value = run.vehicle_id;
-            document.getElementById('run_driver_id').value = run.driver_id;
-            document.getElementById('driver_search').value = run.driver_name;
+            vehicleIdInput.value = run.vehicle_id;
+            vehicleSearchInput.value = `${run.vehicle_prefix} - ${run.vehicle_name || ''}`;
+            
+            driverIdInput.value = run.driver_id;
+            driverSearchInput.value = run.driver_name;
+            
             document.getElementById('start_km').value = run.start_km;
             document.getElementById('end_km').value = run.end_km || '';
             document.getElementById('start_time').value = formatDateTimeForInput(run.start_time);
@@ -225,6 +288,8 @@ document.addEventListener('DOMContentLoaded', () => {
         formTitle.textContent = 'Adicionar Nova Corrida';
         runForm.reset();
         runIdInput.value = '';
+        vehicleIdInput.value = '';
+        driverIdInput.value = '';
         runForm.action = `${BASE_URL}/sector-manager/records/run/store`;
         cancelEditBtn.style.display = 'none';
     };
