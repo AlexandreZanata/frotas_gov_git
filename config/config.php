@@ -6,7 +6,7 @@ if (!defined('SYSTEM_LOADED')) {
 }
 
 // Define a URL base completa do projeto para links e redirecionamentos
-define('BASE_URL', 'http://192.168.15.13/frotas-gov/public');
+define('BASE_URL', 'http://172.19.2.140/frotas-gov/public');
 
 // Você pode adicionar outras configurações globais aqui no futuro
 // Ex: define('SITE_NAME', 'Frotas Gov');

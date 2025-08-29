@@ -50,9 +50,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await response.json();
                 
                 if (result.success && result.data && result.data.length > 0) {
+                    // CORRIGIDO: Agora exibe prefixo e placa, não prefixo e nome
                     vehicleResultsDiv.innerHTML = result.data.map(vehicle => 
-                        `<div data-id="${vehicle.id}" data-prefix="${escapeHTML(vehicle.prefix)}" data-name="${escapeHTML(vehicle.name)}" class="vehicle-result">
-                            ${escapeHTML(vehicle.prefix)} - ${escapeHTML(vehicle.name)}
+                        `<div data-id="${vehicle.id}" data-prefix="${escapeHTML(vehicle.prefix)}" data-plate="${escapeHTML(vehicle.plate)}" class="vehicle-result">
+                            ${escapeHTML(vehicle.prefix)} - ${escapeHTML(vehicle.plate)}
                         </div>`
                     ).join('');
                     vehicleResultsDiv.style.display = 'block';
@@ -68,16 +69,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 300);
     });
 
-    // Selecionar veículo da busca
+    // Selecionar veículo da busca - CORRIGIDO
     vehicleResultsDiv.addEventListener('click', (e) => {
         const vehicleDiv = e.target.closest('.vehicle-result');
         if (vehicleDiv) {
             const vehicleId = vehicleDiv.dataset.id;
             const vehiclePrefix = vehicleDiv.dataset.prefix;
-            const vehicleName = vehicleDiv.dataset.name;
+            const vehiclePlate = vehicleDiv.dataset.plate;
             
             vehicleIdInput.value = vehicleId;
-            vehicleSearchInput.value = `${vehiclePrefix} - ${vehicleName}`;
+            // CORRIGIDO: Agora exibe prefixo e placa
+            vehicleSearchInput.value = `${vehiclePrefix} - ${vehiclePlate}`;
             vehicleResultsDiv.style.display = 'none';
         }
     });
@@ -107,7 +109,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     driverResultsDiv.innerHTML = result.data.map(driver => 
                         `<div data-id="${driver.id}" data-name="${escapeHTML(driver.name)}" class="driver-result">
                             ${escapeHTML(driver.name)}
-                            ${driver.email ? `<div class="search-item-details">${escapeHTML(driver.email)}</div>` : ''}
+                            <div class="search-item-details">
+                                ${driver.cpf ? `CPF: ${escapeHTML(driver.cpf)}` : ''}
+                                ${driver.email ? ` | Email: ${escapeHTML(driver.email)}` : ''}
+                            </div>
                         </div>`
                     ).join('');
                     driverResultsDiv.style.display = 'block';
@@ -164,6 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 runsTableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">${result.message || 'Nenhuma corrida encontrada.'}</td></tr>`;
             }
         } catch (error) {
+            console.error("Erro ao buscar corridas:", error);
             runsTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color: red;">Erro ao carregar os dados.</td></tr>';
         }
     };
@@ -225,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(modal) modal.style.display = 'none';
     };
     
-    // Edição de corrida - atualizado para usar a busca de veículos
+    // Edição de corrida - CORRIGIDO
     const fillRunForm = async (runId) => {
         try {
             // Configurar o formulário para edição
@@ -252,9 +258,10 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const run = result.data;
             
-            // Preencher os campos
+            // Preencher os campos do formulário
             vehicleIdInput.value = run.vehicle_id;
-            vehicleSearchInput.value = `${run.vehicle_prefix} - ${run.vehicle_name || ''}`;
+            // CORRIGIDO: Exibe prefixo e placa
+            vehicleSearchInput.value = `${run.vehicle_prefix} - ${run.plate || run.vehicle_name}`;
             
             driverIdInput.value = run.driver_id;
             driverSearchInput.value = run.driver_name;
@@ -265,6 +272,17 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('end_time').value = run.end_time ? formatDateTimeForInput(run.end_time) : '';
             document.getElementById('destination').value = run.destination;
             document.getElementById('stop_point').value = run.stop_point || '';
+            
+            console.log("Formulário preenchido com os seguintes dados:", {
+                vehicle_id: vehicleIdInput.value,
+                driver_id: driverIdInput.value,
+                start_km: document.getElementById('start_km').value,
+                end_km: document.getElementById('end_km').value,
+                start_time: document.getElementById('start_time').value,
+                end_time: document.getElementById('end_time').value,
+                destination: document.getElementById('destination').value,
+                stop_point: document.getElementById('stop_point').value
+            });
             
             // Rolar para o formulário
             runForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -295,7 +313,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     // Botão de cancelar edição
-    cancelEditBtn.addEventListener('click', resetFormToCreateMode);
+    if (cancelEditBtn) {
+        cancelEditBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            resetFormToCreateMode();
+        });
+    }
     
     // --- DELEGAÇÃO DE EVENTOS PRINCIPAL ---
     document.body.addEventListener('click', async (e) => {
@@ -332,6 +355,32 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+    
+    // Log para debug
+    console.log("Script manage_records.js carregado");
+    
+    // Adicionar verificação de debug no envio do formulário
+    if (runForm) {
+        runForm.addEventListener('submit', function(e) {
+            // Não impede o envio do formulário, apenas registra os dados
+            const formData = new FormData(this);
+            const formDataObj = {};
+            
+            formData.forEach((value, key) => {
+                formDataObj[key] = value;
+            });
+            
+            console.log('Enviando formulário com dados:', formDataObj);
+            
+            // Verificação crítica de IDs
+            if (!formData.get('vehicle_id') || !formData.get('driver_id')) {
+                console.warn('ATENÇÃO: ID de veículo ou motorista não está definido!');
+                e.preventDefault(); // Impede o envio se os IDs não estiverem presentes
+                alert('Por favor, selecione um veículo e um motorista antes de salvar.');
+                return false;
+            }
+        });
+    }
 
     // Carga inicial
     fetchRuns();

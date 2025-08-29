@@ -713,9 +713,10 @@ class SectorManagerController
             show_error_page('Confirmação Inválida', 'A frase de confirmação está incorreta ou a justificativa está vazia.', 400);
         }
         
-        $this->conn->beginTransaction();
         try {
-            // 1. Pega os dados do veículo antes de deletar para o log e verificação
+            $this->conn->beginTransaction();
+            
+            // Pega os dados antes de deletar para o log
             $stmt = $this->conn->prepare("SELECT * FROM vehicles WHERE id = :id AND current_secretariat_id = :secretariat_id");
             $stmt->execute([':id' => $vehicleId, ':secretariat_id' => $_SESSION['user_secretariat_id']]);
             $vehicleData = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -723,38 +724,17 @@ class SectorManagerController
                 throw new Exception("Veículo não encontrado ou não pertence à sua secretaria.");
             }
             
-            // 2. Encontra todas as corridas (runs) associadas a este veículo
-            $stmt_runs = $this->conn->prepare("SELECT id FROM runs WHERE vehicle_id = :vehicle_id");
-            $stmt_runs->execute([':vehicle_id' => $vehicleId]);
-            $run_ids = $stmt_runs->fetchAll(PDO::FETCH_COLUMN);
-
-            // 3. Se houver corridas, exclui os registros dependentes (checklists e abastecimentos)
-            if (!empty($run_ids)) {
-                $inQuery = implode(',', array_fill(0, count($run_ids), '?'));
-                
-                // Exclui checklists associados às corridas
-                $this->conn->prepare("DELETE FROM checklists WHERE run_id IN ($inQuery)")->execute($run_ids);
-                
-                // Exclui abastecimentos associados às corridas
-                $this->conn->prepare("DELETE FROM fuelings WHERE run_id IN ($inQuery)")->execute($run_ids);
-            }
-            
-            // 4. Exclui as próprias corridas
-            $this->conn->prepare("DELETE FROM runs WHERE vehicle_id = :vehicle_id")->execute([':vehicle_id' => $vehicleId]);
-
-            // 5. Finalmente, exclui o veículo
+            // Deleta o veículo
             $stmt_delete = $this->conn->prepare("DELETE FROM vehicles WHERE id = :id");
             $stmt_delete->execute([':id' => $vehicleId]);
 
             if ($stmt_delete->rowCount() > 0) {
-                // Registra a ação no log de auditoria
                 $logDetails = ['justificativa' => $justificativa, 'deleted_vehicle_plate' => $vehicleData['plate']];
-                $this->auditLog->log($_SESSION['user_id'], 'delete_vehicle_cascade', 'vehicles', $vehicleId, $vehicleData, $logDetails);
-                
+                $this->auditLog->log($_SESSION['user_id'], 'delete_vehicle', 'vehicles', $vehicleId, $vehicleData, $logDetails);
                 $this->conn->commit();
-                $_SESSION['success_message'] = "Veículo e todos os seus registros associados foram excluídos com sucesso!";
+                $_SESSION['success_message'] = "Veículo excluído com sucesso!";
             } else {
-                throw new Exception("Falha ao excluir o registro principal do veículo.");
+                throw new Exception("Falha ao excluir o veículo.");
             }
 
             header('Location: ' . BASE_URL . '/sector-manager/vehicles');
@@ -762,8 +742,12 @@ class SectorManagerController
 
         } catch (Exception $e) {
             $this->conn->rollBack();
-            // A verificação de chave estrangeira não é mais necessária, pois estamos tratando manualmente,
-            // mas mantemos um erro genérico para outros problemas.
+            // Adicionar verificação de chave estrangeira
+            if (str_contains($e->getMessage(), 'foreign key constraint fails')) {
+                 $_SESSION['error_message'] = "Não é possível excluir este veículo, pois ele possui registros associados (corridas, etc). Considere alterar o status para 'Bloqueado'.";
+                 header('Location: ' . BASE_URL . '/sector-manager/vehicles');
+                 exit();
+            }
             show_error_page('Erro Interno', 'Não foi possível processar a exclusão. Detalhe: ' . $e->getMessage(), 500);
         }
     }

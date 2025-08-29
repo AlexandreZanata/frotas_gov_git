@@ -107,13 +107,15 @@ $router->get('sector-manager/records/run/history', 'RecordController@runHistory'
 $router->get('sector-manager/ajax/search-runs', 'RecordController@ajax_search_runs');
 $router->post('sector-manager/ajax/get-run', 'RecordController@ajax_get_run');
 $router->get('sector-manager/ajax/search-drivers', 'RecordController@ajax_search_drivers');
-$router->get('sector-manager/ajax/search-vehicles', 'RecordController@ajax_search_vehicles'); // Nova rota para busca de veículos
-// $router->get('sector-manager/ajax/search-fuelings', 'RecordController@ajax_search_fuelings'); // Para o futuro
+$router->get('sector-manager/ajax/record-vehicle-search', 'RecordController@ajax_search_vehicles');
+
 
 // Ações de CRUD para Corridas
 $router->post('sector-manager/records/run/store', 'RecordController@storeRun');
 $router->post('sector-manager/records/run/update', 'RecordController@updateRun');
 $router->post('sector-manager/records/run/delete', 'RecordController@deleteRun');
+
+
 
 // Ajax para gestão de usuários
 $router->post('sector-manager/ajax/get-user', 'SectorManagerController@ajax_get_user');

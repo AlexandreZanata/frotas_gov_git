@@ -1,6 +1,6 @@
 <?php
-// Pega o final da URL para determinar a página ativa
-$current_page = basename($_SERVER['REQUEST_URI']);
+// Pega a URL completa para uma verificação mais robusta
+$current_uri = $_SERVER['REQUEST_URI'];
 ?>
 <aside class="sidebar">
     <div class="sidebar-header">
@@ -8,17 +8,23 @@ $current_page = basename($_SERVER['REQUEST_URI']);
     </div>
     <nav class="sidebar-nav">
         <ul>
-            <li class="<?php echo ($current_page == 'dashboard') ? 'active' : ''; ?>">
+            <!-- A classe 'active' é adicionada se a URI contém 'dashboard' -->
+            <li class="<?php echo (strpos($current_uri, 'dashboard') !== false) ? 'active' : ''; ?>">
                 <a href="<?php echo BASE_URL; ?>/dashboard"><i class="fas fa-tachometer-alt"></i> Painel</a>
             </li>
-            <li class="<?php echo ($current_page == 'vehicles') ? 'active' : ''; ?>">
+            
+            <!-- CORREÇÃO: A classe 'active' é adicionada se a URI contém 'vehicles' -->
+            <li class="<?php echo (strpos($current_uri, 'vehicles') !== false) ? 'active' : ''; ?>">
                 <a href="<?php echo BASE_URL; ?>/sector-manager/vehicles"><i class="fas fa-car"></i> Veículos</a>
             </li>
-            <li class="<?php echo ($current_page == 'records') ? 'active' : ''; ?>">
+
+            <!-- CORREÇÃO: A classe 'active' é adicionada se a URI contém 'records' -->
+            <li class="<?php echo (strpos($current_uri, 'records') !== false) ? 'active' : ''; ?>">
                 <a href="<?php echo BASE_URL; ?>/sector-manager/records"><i class="fas fa-list-alt"></i> Gerenciar Registros</a>
             </li>
             
-            <li class="<?php echo in_array($current_page, ['create', 'history']) ? 'active' : ''; ?>">
+            <!-- CORREÇÃO: A classe 'active' é adicionada se a URI contém 'users' -->
+            <li class="<?php echo (strpos($current_uri, 'users') !== false) ? 'active' : ''; ?>">
                  <a href="<?php echo BASE_URL; ?>/sector-manager/users/create"><i class="fas fa-users-cog"></i> Gerenciar Usuários</a>
             </li>
 

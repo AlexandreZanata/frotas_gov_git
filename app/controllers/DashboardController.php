@@ -9,95 +9,101 @@ require_once __DIR__ . '/../core/Database.php';
 
 class DashboardController
 {
+    private $conn;
+
+    public function __construct()
+    {
+        $db = new Database();
+        $this->conn = $db->getConnection();
+    }
+
     public function index()
     {
         Auth::checkAuthentication();
 
-        // Verifica se a role do usuário está definida na sessão
-        if (isset($_SESSION['user_role_id'])) {
-            
-            // Se for Gestor Geral (role_id 1), carrega o dashboard de admin.
-            if ($_SESSION['user_role_id'] == 1) { 
-                $this->loadAdminDashboard();
-                return; // Encerra a execução aqui
+        try {
+            if (isset($_SESSION['user_role_id'])) {
+                $role_id = $_SESSION['user_role_id'];
+
+                if ($role_id == 1 || $role_id == 2) {
+                    $secretariatId = ($role_id == 2) ? $_SESSION['user_secretariat_id'] : null;
+                    $this->loadDashboard($secretariatId);
+                    return;
+                }
             }
             
-            // Se for Gestor Setorial (role_id 2), redireciona para a área correta.
-            if ($_SESSION['user_role_id'] == 2) {
-                // Redireciona para uma página padrão do gestor setorial, como o gerenciamento de veículos.
-                header('Location: ' . BASE_URL . '/sector-manager/vehicles');
-                exit();
-            }
+            require_once __DIR__ . '/../../templates/pages/dashboard.php';
+
+        } catch (PDOException $e) {
+            show_error_page('Erro de Banco de Dados', 'Não foi possível carregar os dados do painel. Detalhes: ' . $e->getMessage(), 500);
         }
-        
-        // Para todas as outras roles (ex: motorista), carrega o dashboard padrão.
-        require_once __DIR__ . '/../../templates/pages/dashboard.php';
     }
 
-    private function loadAdminDashboard()
+    private function loadDashboard(?int $secretariatId = null)
     {
-        $db = new Database();
-        $conn = $db->getConnection();
+        $params = [];
+        if ($secretariatId !== null) {
+            $params[':secretariat_id'] = $secretariatId;
+        }
 
-        // --- DADOS PARA OS KPIs (Agora sem filtro por secretaria) ---
-
-        // Total de Corridas
-        $stmtRuns = $conn->prepare("SELECT COUNT(id) as total FROM runs");
-        $stmtRuns->execute();
-        $totalRuns = $stmtRuns->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
-
-        // Veículos em Uso
-        $stmtVehiclesInUse = $conn->prepare("SELECT COUNT(id) as total FROM vehicles WHERE status = 'in_use'");
-        $stmtVehiclesInUse->execute();
-        $totalVehiclesInUse = $stmtVehiclesInUse->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
+        // --- DADOS PARA OS KPIs ---
         
-        // Gasto Total com Combustível
-        $stmtFuel = $conn->prepare("SELECT SUM(total_value) as total FROM fuelings");
-        $stmtFuel->execute();
-        $totalFuelCost = $stmtFuel->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
+        // Cláusulas WHERE dinâmicas
+        $runsWhere = $secretariatId ? "WHERE secretariat_id = :secretariat_id" : "";
+        $vehiclesWhere = $secretariatId ? "WHERE current_secretariat_id = :secretariat_id" : "";
+        $fuelingsWhere = $secretariatId ? "WHERE secretariat_id = :secretariat_id" : "";
+        
+        $totalRunsStmt = $this->conn->prepare("SELECT COUNT(id) FROM runs $runsWhere");
+        $totalRunsStmt->execute($params);
+        $kpi_totalRuns = $totalRunsStmt->fetchColumn() ?? 0;
 
-        // Quilometragem Total
-        $stmtKm = $conn->prepare("SELECT SUM(end_km - start_km) as total FROM runs WHERE status = 'completed'");
-        $stmtKm->execute();
-        $totalKm = $stmtKm->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
+        $vehiclesInUseWhere = ($secretariatId ? "current_secretariat_id = :secretariat_id AND" : "") . " status = 'in_use'";
+        $totalVehiclesInUseStmt = $this->conn->prepare("SELECT COUNT(id) FROM vehicles WHERE $vehiclesInUseWhere");
+        $totalVehiclesInUseStmt->execute($secretariatId ? [':secretariat_id' => $secretariatId] : []);
+        $kpi_totalVehiclesInUse = $totalVehiclesInUseStmt->fetchColumn() ?? 0;
+        
+        $totalFuelCostStmt = $this->conn->prepare("SELECT SUM(total_value) FROM fuelings $fuelingsWhere");
+        $totalFuelCostStmt->execute($params);
+        $kpi_totalFuelCost = $totalFuelCostStmt->fetchColumn() ?? 0;
 
-        // --- DADOS PARA OS GRÁFICOS (Agora sem filtro por secretaria) ---
+        // **CORREÇÃO APLICADA AQUI**
+        // Adiciona a condição "end_km >= start_km" para ignorar dados inválidos e prevenir o erro.
+        $runsCompletedWhere = ($secretariatId ? "secretariat_id = :secretariat_id AND" : "") . " status = 'completed' AND end_km >= start_km";
+        $totalKmStmt = $this->conn->prepare("SELECT SUM(end_km - start_km) FROM runs WHERE $runsCompletedWhere");
+        $totalKmStmt->execute($secretariatId ? [':secretariat_id' => $secretariatId] : []);
+        $kpi_totalKm = $totalKmStmt->fetchColumn() ?? 0;
 
-        // Gráfico de Corridas por Veículo
-        $stmtRunsByVehicle = $conn->prepare("
+        // --- DADOS PARA OS GRÁFICOS ---
+        $runsByVehicleJoinWhere = $secretariatId ? "WHERE r.secretariat_id = :secretariat_id" : "";
+        $stmtRunsByVehicle = $this->conn->prepare("
             SELECT v.name, COUNT(r.id) as run_count
-            FROM runs r
-            JOIN vehicles v ON r.vehicle_id = v.id
-            GROUP BY v.name
-            ORDER BY run_count DESC
+            FROM runs r JOIN vehicles v ON r.vehicle_id = v.id
+            $runsByVehicleJoinWhere
+            GROUP BY v.name ORDER BY run_count DESC
         ");
-        $stmtRunsByVehicle->execute();
+        $stmtRunsByVehicle->execute($params);
         $runsByVehicleData = $stmtRunsByVehicle->fetchAll(PDO::FETCH_ASSOC);
 
-        // Gráfico de Gastos Mensais com Combustível
-        $stmtMonthlyFuel = $conn->prepare("
-            SELECT 
-                DATE_FORMAT(f.created_at, '%Y-%m') as month,
-                SUM(f.total_value) as total_value
+        $stmtMonthlyFuel = $this->conn->prepare("
+            SELECT DATE_FORMAT(f.created_at, '%Y-%m') as month, SUM(f.total_value) as total_value
             FROM fuelings f
-            GROUP BY month
-            ORDER BY month ASC
+            $fuelingsWhere
+            GROUP BY month ORDER BY month ASC
         ");
-        $stmtMonthlyFuel->execute();
+        $stmtMonthlyFuel->execute($params);
         $monthlyFuelData = $stmtMonthlyFuel->fetchAll(PDO::FETCH_ASSOC);
 
-        // Passa os dados para a view
+        // --- PREPARA DADOS E CARREGA A VIEW ---
         $data = [
-            'totalRuns' => $totalRuns,
-            'totalVehiclesInUse' => $totalVehiclesInUse,
-            'totalFuelCost' => number_format($totalFuelCost, 2, ',', '.'),
-            'totalKm' => $totalKm,
+            'totalRuns' => $kpi_totalRuns,
+            'totalVehiclesInUse' => $kpi_totalVehiclesInUse,
+            'totalFuelCost' => number_format($kpi_totalFuelCost, 2, ',', '.'),
+            'totalKm' => $kpi_totalKm,
             'runsByVehicleData' => json_encode($runsByVehicleData),
             'monthlyFuelData' => json_encode($monthlyFuelData)
         ];
 
         extract($data);
-
         require_once __DIR__ . '/../../templates/pages/admin_dashboard.php';
     }
 }
