@@ -19,7 +19,9 @@
                 <li><a href="#" class="active"><i class="fas fa-tachometer-alt"></i> Painel</a></li>
                 <li><a href="<?php echo BASE_URL; ?>/runs/new"><i class="fas fa-book"></i> Diário de Bordo</a></li>
                 <li><a href="<?php echo BASE_URL; ?>/runs/history"><i class="fas fa-road"></i> Minhas Corridas</a></li>
-
+                                                    <li class="<?php echo (strpos($current_uri, 'chat') !== false) ? 'active' : ''; ?>">
+                <a href="<?php echo BASE_URL; ?>/chat"><i class="fas fa-comments"></i> Chat</a>
+            </li>
                 <li><a href="/frotas-gov/public/logout"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
             </ul>
         </nav>

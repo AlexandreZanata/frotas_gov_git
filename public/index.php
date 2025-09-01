@@ -142,6 +142,25 @@ $router->get('sector-manager/reports/generate', 'ReportController@generatePdfRep
 $router->post('sector-manager/ajax/get-user', 'SectorManagerController@ajax_get_user');
 $router->get('sector-manager/ajax/search-users', 'SectorManagerController@ajax_search_users');
 
+
+/*
+|--------------------------------------------------------------------------
+| Rotas do Chat
+|--------------------------------------------------------------------------
+*/
+$router->get('chat', 'ChatController@index');
+
+// Rotas da API para o chat (serão chamadas pelo JavaScript)
+$router->get('chat/api/conversations', 'ChatController@ajax_get_conversations');
+$router->get('chat/api/messages', 'ChatController@ajax_get_messages');
+$router->post('chat/api/send-message', 'ChatController@ajax_send_message');
+
+// --- ROTAS ADICIONADAS ---
+$router->get('chat/api/templates', 'ChatController@api', ['templates']);
+$router->post('chat/api/save-template', 'ChatController@api', ['save-template']);
+$router->get('chat/api/delete-template', 'ChatController@api', ['delete-template']);
+$router->post('chat/api/schedule-message', 'ChatController@api', ['schedule-message']);
+
 /*
 |--------------------------------------------------------------------------
 | Processamento da requisição

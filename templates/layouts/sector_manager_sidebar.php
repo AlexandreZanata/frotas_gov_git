@@ -31,6 +31,9 @@ $current_uri = $_SERVER['REQUEST_URI'];
                         <li class="<?php echo (strpos($current_uri, 'reports') !== false) ? 'active' : ''; ?>">
                 <a href="<?php echo BASE_URL; ?>/sector-manager/reports"><i class="fas fa-chart-bar"></i> Relatórios</a>
             </li>
+                                    <li class="<?php echo (strpos($current_uri, 'chat') !== false) ? 'active' : ''; ?>">
+                <a href="<?php echo BASE_URL; ?>/chat"><i class="fas fa-comments"></i> Chat</a>
+            </li>
 
             <li><a href="<?php echo BASE_URL; ?>/logout"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
         </ul>
