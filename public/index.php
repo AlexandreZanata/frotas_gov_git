@@ -133,6 +133,10 @@ $router->get('sector-manager/records/history', 'RecordController@recordsHistory'
 //EDIÇÃO DE ABASTEICMENTO ACIMA
 $router->post('sector-manager/ajax/get-fuel-price', 'RecordController@ajax_get_fuel_price');
 
+//ROTAS DE RELATORIO PARA GESTOR SETORIAL
+$router->get('sector-manager/reports', 'ReportController@index');
+$router->get('sector-manager/reports/generate', 'ReportController@generatePdfReport');
+
 
 // Ajax para gestão de usuários
 $router->post('sector-manager/ajax/get-user', 'SectorManagerController@ajax_get_user');

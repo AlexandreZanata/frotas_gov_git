@@ -22,10 +22,14 @@ $current_uri = $_SERVER['REQUEST_URI'];
             <li class="<?php echo (strpos($current_uri, 'records') !== false) ? 'active' : ''; ?>">
                 <a href="<?php echo BASE_URL; ?>/sector-manager/records"><i class="fas fa-list-alt"></i> Gerenciar Registros</a>
             </li>
+
             
             <!-- CORREÇÃO: A classe 'active' é adicionada se a URI contém 'users' -->
             <li class="<?php echo (strpos($current_uri, 'users') !== false) ? 'active' : ''; ?>">
                  <a href="<?php echo BASE_URL; ?>/sector-manager/users/create"><i class="fas fa-users-cog"></i> Gerenciar Usuários</a>
+            </li>
+                        <li class="<?php echo (strpos($current_uri, 'reports') !== false) ? 'active' : ''; ?>">
+                <a href="<?php echo BASE_URL; ?>/sector-manager/reports"><i class="fas fa-chart-bar"></i> Relatórios</a>
             </li>
 
             <li><a href="<?php echo BASE_URL; ?>/logout"><i class="fas fa-sign-out-alt"></i> Sair</a></li>

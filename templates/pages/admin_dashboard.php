@@ -25,6 +25,9 @@
             <li class="<?php echo in_array($current_page, ['create', 'history']) ? 'active' : ''; ?>">
                  <a href="<?php echo BASE_URL; ?>/sector-manager/users/create"><i class="fas fa-users-cog"></i> Gerenciar Usuários</a>
             </li>
+            <li class="<?php echo (strpos($current_uri, 'reports') !== false) ? 'active' : ''; ?>">
+                <a href="<?php echo BASE_URL; ?>/sector-manager/reports"><i class="fas fa-chart-bar"></i> Relatórios</a>
+            </li>
 
                 <li><a href="/frotas-gov/public/logout"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
             </ul>
