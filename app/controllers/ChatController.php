@@ -106,77 +106,78 @@ class ChatController
         }
     }
 
-    public function api_conversations()
-    {
-        header('Content-Type: application/json');
-        
-        try {
-            // 1. Busca conversas existentes (grupos ou 1-para-1)
-            $sql_conversations = "
-                SELECT 
-                    cr.id as room_id,
-                    cr.is_group,
-                    CASE 
-                        WHEN cr.is_group = 1 THEN cr.name
-                        ELSE u.name 
-                    END as conversation_name,
-                    (SELECT message FROM chat_messages WHERE room_id = cr.id ORDER BY created_at DESC LIMIT 1) as last_message,
-                    (SELECT created_at FROM chat_messages WHERE room_id = cr.id ORDER BY created_at DESC LIMIT 1) as last_message_time,
-                    (SELECT COUNT(*) FROM chat_message_recipients rec JOIN chat_messages msg ON rec.message_id = msg.id WHERE msg.room_id = cr.id AND rec.recipient_id = :current_user_id1 AND rec.is_read = 0) as unread_count
-                FROM chat_participants cp
-                JOIN chat_rooms cr ON cp.room_id = cr.id
-                LEFT JOIN chat_participants cp2 ON cr.id = cp2.room_id AND cp2.user_id != :current_user_id2
-                LEFT JOIN users u ON cp2.user_id = u.id AND cr.is_group = 0
-                WHERE cp.user_id = :current_user_id3
-                ORDER BY IFNULL(last_message_time, '1900-01-01') DESC
-            ";
-            $stmt = $this->conn->prepare($sql_conversations);
-            $currentUserId = $this->currentUser['id'];
-            $stmt->execute([
-                ':current_user_id1' => $currentUserId,
-                ':current_user_id2' => $currentUserId,
-                ':current_user_id3' => $currentUserId
-            ]);
-            $conversations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Substitua a função inteira no seu chat_controller.php
+public function api_conversations()
+{
+    header('Content-Type: application/json');
+    
+    try {
+        $currentUserId = $this->currentUser['id'];
 
-            // 2. Busca todos os usuários com quem ainda não há uma conversa 1-para-1
-            $sql_users = "
-                SELECT u.id, u.name, s.name as secretariat_name
-                FROM users u
-                LEFT JOIN secretariats s ON u.secretariat_id = s.id
-                WHERE u.id != :current_user_id1 AND u.id NOT IN (
-                    -- Seleciona todos os usuários que já estão em uma sala 1-para-1 com o usuário atual
-                    SELECT cp2.user_id
-                    FROM chat_participants cp1
-                    JOIN chat_rooms cr ON cp1.room_id = cr.id AND cr.is_group = 0
-                    JOIN chat_participants cp2 ON cp1.room_id = cp2.room_id AND cp2.user_id != :current_user_id2
-                    WHERE cp1.user_id = :current_user_id3
-                )
-                ORDER BY u.name ASC
-            ";
-            $stmt_users = $this->conn->prepare($sql_users);
-            $stmt_users->execute([
-                ':current_user_id1' => $currentUserId,
-                ':current_user_id2' => $currentUserId,
-                ':current_user_id3' => $currentUserId
-            ]);
-            $available_users = $stmt_users->fetchAll(PDO::FETCH_ASSOC);
+        // 1. Busca conversas existentes (grupos ou 1-para-1) - QUERY CORRIGIDA
+        $sql_conversations = "
+            SELECT 
+                cr.id as room_id,
+                cr.is_group,
+              
+                CASE 
+                    WHEN cr.is_group = 1 THEN cr.name
+                    ELSE other_user.name 
+                END as conversation_name,
+          
+                (SELECT message FROM chat_messages WHERE room_id = cr.id ORDER BY created_at DESC LIMIT 1) as last_message,
+                (SELECT created_at FROM chat_messages WHERE room_id = cr.id ORDER BY created_at DESC LIMIT 1) as last_message_time,
+                
+                (SELECT COUNT(*) FROM chat_message_recipients WHERE message_id IN (SELECT id FROM chat_messages WHERE room_id = cr.id) AND recipient_id = :current_user_id1 AND is_read = 0) as unread_count
+            FROM chat_participants cp
+            JOIN chat_rooms cr ON cp.room_id = cr.id
+           
+            LEFT JOIN chat_participants other_cp ON cr.id = other_cp.room_id AND other_cp.user_id != :current_user_id2
+            LEFT JOIN users other_user ON other_cp.user_id = other_user.id AND cr.is_group = 0
+            WHERE cp.user_id = :current_user_id3
+            GROUP BY cr.id -- Agrupa por sala para evitar duplicatas
+            ORDER BY IFNULL(last_message_time, cr.created_at) DESC
+        ";
+        $stmt = $this->conn->prepare($sql_conversations);
+        $stmt->execute([
+            ':current_user_id1' => $currentUserId,
+            ':current_user_id2' => $currentUserId,
+            ':current_user_id3' => $currentUserId
+        ]);
+        $conversations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            echo json_encode(['success' => true, 'conversations' => $conversations, 'available_users' => $available_users]);
+        // O restante da lógica para buscar usuários disponíveis permanece o mesmo e está correto.
+        $sql_users = "
+            SELECT u.id, u.name, s.name as secretariat_name
+            FROM users u
+            LEFT JOIN secretariats s ON u.secretariat_id = s.id
+            WHERE u.id != :current_user_id1 AND u.id NOT IN (
+                SELECT cp2.user_id
+                FROM chat_participants cp1
+                JOIN chat_rooms cr ON cp1.room_id = cr.id AND cr.is_group = 0
+                JOIN chat_participants cp2 ON cp1.room_id = cp2.room_id AND cp2.user_id != :current_user_id2
+                WHERE cp1.user_id = :current_user_id3
+            )
+            ORDER BY u.name ASC
+        ";
+        $stmt_users = $this->conn->prepare($sql_users);
+        $stmt_users->execute([
+            ':current_user_id1' => $currentUserId,
+            ':current_user_id2' => $currentUserId,
+            ':current_user_id3' => $currentUserId
+        ]);
+        $available_users = $stmt_users->fetchAll(PDO::FETCH_ASSOC);
 
-        } catch (PDOException $e) {
-            http_response_code(500);
-            echo json_encode([
-                'success' => false, 
-                'message' => 'Erro de banco de dados: ' . $e->getMessage(),
-                'debug' => [
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine(),
-                    'trace' => $e->getTraceAsString()
-                ]
-            ]);
-        }
+        echo json_encode(['success' => true, 'conversations' => $conversations, 'available_users' => $available_users]);
+
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode([
+            'success' => false, 
+            'message' => 'Erro de banco de dados: ' . $e->getMessage(),
+        ]);
     }
+}
 
     public function api_messages()
     {
