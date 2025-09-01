@@ -156,10 +156,10 @@ $router->get('chat/api/messages', 'ChatController@ajax_get_messages');
 $router->post('chat/api/send-message', 'ChatController@ajax_send_message');
 
 // --- ROTAS ADICIONADAS ---
-$router->get('chat/api/templates', 'ChatController@api', ['templates']);
-$router->post('chat/api/save-template', 'ChatController@api', ['save-template']);
-$router->get('chat/api/delete-template', 'ChatController@api', ['delete-template']);
-$router->post('chat/api/schedule-message', 'ChatController@api', ['schedule-message']);
+$router->get('chat/api/templates', 'ChatController@api_templates');
+$router->post('chat/api/save-template', 'ChatController@api_save_template');
+$router->get('chat/api/delete-template', 'ChatController@api_delete_template');
+$router->post('chat/api/schedule-message', 'ChatController@api_schedule_message');
 
 /*
 |--------------------------------------------------------------------------

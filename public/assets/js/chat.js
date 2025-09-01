@@ -62,6 +62,19 @@ function formatTimestamp(timestamp) {
     }
 }
 
+function setupBroadcastTemplateButton() {
+    const useTemplateBroadcastBtn = document.getElementById('use-template-broadcast-btn');
+    if (useTemplateBroadcastBtn) {
+        useTemplateBroadcastBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Adiciona um marcador para saber qual textarea preencher
+            document.body.dataset.templateTarget = 'broadcast'; 
+            fetchTemplates();
+            if (templatesModal) templatesModal.style.display = 'flex';
+        });
+    }
+}
+
 // Renderizar mensagem (com horário correto)
 function renderMessage(msg) {
     const isCurrentUser = parseInt(msg.sender_id) === parseInt(CURRENT_USER_ID);
@@ -103,39 +116,39 @@ function renderMessage(msg) {
         return text.replace(urlRegex, url => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
     }
     
-    function initEmojiPicker() {
-        if (emojiButton) {
-            emojiButton.addEventListener('click', () => {
-                if (!emojiPicker) {
-                    // Verifica se o EmojiPicker está disponível
-                    if (typeof EmojiPicker === 'function') {
-                        emojiPicker = new EmojiPicker({
-                            trigger: [emojiButton],
-                            position: 'top',
-                            insertInto: messageInput,
-                        });
-                    } else {
-                        console.warn('EmojiPicker não está disponível');
-                        return;
-                    }
-                }
-                
-                // Toggle do emoji picker
-                const isVisible = emojiButton.classList.contains('active');
-                if (isVisible) {
-                    if (typeof emojiPicker.hidePicker === 'function') {
-                        emojiPicker.hidePicker();
-                    }
-                    emojiButton.classList.remove('active');
+function initEmojiPicker() {
+    if (emojiButton) {
+        emojiButton.addEventListener('click', () => {
+            if (!emojiPicker) {
+                // Verifica se o EmojiPicker está disponível
+                if (typeof EmojiPicker === 'function') {
+                    emojiPicker = new EmojiPicker({
+                        trigger: [emojiButton],
+                        position: 'top',
+                        insertInto: messageInput,
+                    });
                 } else {
-                    if (typeof emojiPicker.showPicker === 'function') {
-                        emojiPicker.showPicker(emojiButton);
-                    }
-                    emojiButton.classList.add('active');
+                    console.warn('EmojiPicker não está disponível');
+                    return;
                 }
-            });
-        }
+            }
+            
+            // Toggle do emoji picker
+            const isVisible = emojiButton.classList.contains('active');
+            if (isVisible) {
+                if (typeof emojiPicker.hidePicker === 'function') {
+                    emojiPicker.hidePicker();
+                }
+                emojiButton.classList.remove('active');
+            } else {
+                if (typeof emojiPicker.showPicker === 'function') {
+                    emojiPicker.showPicker(emojiButton);
+                }
+                emojiButton.classList.add('active');
+            }
+        });
     }
+}
     
     // --- Renderização ---
     
@@ -491,7 +504,7 @@ function renderTemplate(template) {
     `;
 }
 
-// Função para editar um template
+// Substitua a função editTemplate
 async function editTemplate(templateId) {
     if (!templateId || !document.getElementById('template-id') || !newTemplateModal) return;
     
@@ -502,48 +515,28 @@ async function editTemplate(templateId) {
     document.getElementById('template-title').value = template.title;
     document.getElementById('template-content').value = template.content;
     
-    // Configurar o escopo
+    // Adicionado para cor
+    const styles = template.styles ? JSON.parse(template.styles) : {};
+    document.getElementById('template-color').value = styles.color || '#cfe2ff';
+
     const scopeSelect = document.getElementById('template-scope');
     if (scopeSelect) {
         scopeSelect.value = template.scope;
     }
     
-    // Fechar modal de templates e abrir modal de edição
     if (templatesModal) templatesModal.style.display = 'none';
     newTemplateModal.style.display = 'flex';
 }
 
-// Função para excluir um template
-async function deleteTemplate(templateId) {
-    if (!templateId) return;
-    
-    try {
-        const response = await fetch(`${BASE_URL}/chat/api/delete-template?id=${templateId}`);
-        if (!response.ok) {
-            throw new Error(`Erro ${response.status}`);
-        }
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            // Recarregar a lista de templates
-            fetchTemplates();
-            alert('Modelo excluído com sucesso!');
-        } else {
-            throw new Error(result.message || 'Erro desconhecido');
-        }
-    } catch (error) {
-        console.error('Erro ao excluir template:', error);
-        alert('Erro ao excluir modelo: ' + error.message);
-    }
-}
-
-// Função para salvar um template
+// Substitua a função saveTemplate
 async function saveTemplate() {
     const templateId = document.getElementById('template-id')?.value;
     const title = document.getElementById('template-title')?.value;
     const content = document.getElementById('template-content')?.value;
+    const color = document.getElementById('template-color')?.value;
     const scope = document.getElementById('template-scope')?.value || 'personal';
+    
+    const styles = JSON.stringify({ color: color });
     
     if (!title || !content) {
         alert('Por favor, preencha o título e o conteúdo da mensagem.');
@@ -554,9 +547,10 @@ async function saveTemplate() {
         const response = await fetch(`${BASE_URL}/chat/api/save-template`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ template_id: templateId || null, title, content, scope })
+            body: JSON.stringify({ template_id: templateId || null, title, content, scope, styles })
         });
         
+        // ... (o resto da função permanece o mesmo)
         if (!response.ok) {
             throw new Error(`Erro ${response.status}`);
         }
@@ -564,21 +558,15 @@ async function saveTemplate() {
         const result = await response.json();
         
         if (result.success) {
-            // Limpar campos e fechar modal
             if (document.getElementById('template-id')) document.getElementById('template-id').value = '';
             if (document.getElementById('template-title')) document.getElementById('template-title').value = '';
             if (document.getElementById('template-content')) document.getElementById('template-content').value = '';
             if (document.getElementById('template-scope')) document.getElementById('template-scope').value = 'personal';
-            
+            if (document.getElementById('template-color')) document.getElementById('template-color').value = '#cfe2ff';
+
             if (newTemplateModal) newTemplateModal.style.display = 'none';
-            
-            // Recarregar templates e mostrar o modal de templates
             await fetchTemplates();
             if (templatesModal) templatesModal.style.display = 'flex';
-            
-            alert(templateId ? 'Modelo atualizado com sucesso!' : 'Novo modelo criado com sucesso!');
-        } else {
-            throw new Error(result.message || 'Erro desconhecido');
         }
     } catch (error) {
         console.error('Erro ao salvar template:', error);
@@ -697,101 +685,101 @@ async function scheduleMessage() {
 
     // --- Envio de Mensagens ---
     
-    async function sendMessage(message, roomId = null, recipients = [], file = null, createGroup = false) {
-        if (!messageInput) return;
+async function sendMessage(message, roomId = null, recipients = [], file = null, createGroup = false) {
+    if (!messageInput) return;
+    
+    messageInput.disabled = true;
+    if (sendBtn) sendBtn.disabled = true;
+    
+    try {
+        let response;
         
-        messageInput.disabled = true;
-        if (sendBtn) sendBtn.disabled = true;
-        
-        try {
-            let response;
+        if (file) {
+            // Enviar com arquivo usando FormData
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('message', message);
             
-            if (file) {
-                // Enviar com arquivo usando FormData
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('message', message);
-                
-                if (roomId) formData.append('room_id', roomId);
-                if (recipients.length > 0) formData.append('recipients', recipients.join(','));
-                if (createGroup) formData.append('create_group', 'true');
-                
-                response = await fetch(`${BASE_URL}/chat/api/send-message`, {
-                    method: 'POST',
-                    body: formData
-                });
-                
-            } else {
-                // Enviar mensagem normal
-                const payload = { message };
-                if (roomId) payload.room_id = roomId;
-                if (recipients.length > 0) payload.recipients = recipients;
-                if (createGroup) payload.create_group = true;
-                
-                response = await fetch(`${BASE_URL}/chat/api/send-message`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-            }
+            if (roomId) formData.append('room_id', roomId);
+            if (recipients.length > 0) formData.append('recipients', recipients.join(','));
+            if (createGroup) formData.append('create_group', 'true');
             
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || `Erro ${response.status}`);
-            }
+            response = await fetch(`${BASE_URL}/chat/api/send-message`, {
+                method: 'POST',
+                body: formData
+            });
             
-            const result = await response.json();
-
-            if (result.success) {
-                messageInput.value = '';
-                if (fileInput) fileInput.value = '';
-                if (fileButton && fileButton.classList.contains('has-file')) {
-                    fileButton.classList.remove('has-file');
-                    fileButton.title = 'Anexar arquivo';
-                }
-                
-                // Se há mensagem em massa não seguimos o fluxo normal
-                if (result.is_broadcast) {
-                    alert(`Mensagem enviada para ${result.sent_count} destinatários.`);
-                    await fetchConversationsAndUsers(); // Atualizar a lista de conversas
-                    return;
-                }
-
-                // Se era uma nova conversa, o backend retorna o novo room_id
-                const newRoomId = result.room_id;
-                
-                // Adiciona a nova mensagem diretamente se estamos na mesma sala
-                if (newRoomId === activeRoomId && result.message_data) {
-                    const newMessageHtml = renderMessage(result.message_data);
-                    if (messagesArea) {
-                        messagesArea.innerHTML += newMessageHtml;
-                        messagesArea.scrollTop = messagesArea.scrollHeight;
-                    }
-                }
-                
-                await fetchConversationsAndUsers(); // Atualiza a lista da sidebar
-                
-                // Se mudamos de sala ou é uma nova conversa
-                if (newRoomId !== activeRoomId) {
-                    // Se for uma nova conversa, abre e carrega a conversa recém-criada
-                    setTimeout(() => {
-                        const newConversationItem = document.querySelector(`.conversation-item[data-room-id="${newRoomId}"]`);
-                        if(newConversationItem) newConversationItem.click();
-                    }, 300);
-                }
-                
-            } else {
-                alert('Erro ao enviar: ' + result.message);
-            }
-        } catch(error) {
-            console.error('Erro ao enviar mensagem:', error);
-            alert('Erro ao enviar mensagem: ' + error.message);
-        } finally {
-            messageInput.disabled = false;
-            if (sendBtn) sendBtn.disabled = false;
-            messageInput.focus();
+        } else {
+            // Enviar mensagem normal
+            const payload = { message };
+            if (roomId) payload.room_id = roomId;
+            if (recipients.length > 0) payload.recipients = recipients;
+            if (createGroup) payload.create_group = true;
+            
+            response = await fetch(`${BASE_URL}/chat/api/send-message`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
         }
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `Erro ${response.status}`);
+        }
+        
+        const result = await response.json();
+
+        if (result.success) {
+            messageInput.value = '';
+            if (fileInput) fileInput.value = '';
+            if (fileButton && fileButton.classList.contains('has-file')) {
+                fileButton.classList.remove('has-file');
+                fileButton.title = 'Anexar arquivo';
+            }
+            
+            // Se há mensagem em massa não seguimos o fluxo normal
+            if (result.is_broadcast) {
+                alert(`Mensagem enviada para ${result.sent_count} destinatários.`);
+                await fetchConversationsAndUsers(); // Atualizar a lista de conversas
+                return;
+            }
+
+            // Se era uma nova conversa, o backend retorna o novo room_id
+            const newRoomId = result.room_id;
+            
+            // Adiciona a nova mensagem diretamente se estamos na mesma sala
+            if (newRoomId === activeRoomId && result.message_data) {
+                const newMessageHtml = renderMessage(result.message_data);
+                if (messagesArea) {
+                    messagesArea.innerHTML += newMessageHtml;
+                    messagesArea.scrollTop = messagesArea.scrollHeight;
+                }
+            }
+            
+            await fetchConversationsAndUsers(); // Atualiza a lista da sidebar
+            
+            // Se mudamos de sala ou é uma nova conversa
+            if (newRoomId !== activeRoomId) {
+                // Se for uma nova conversa, abre e carrega a conversa recém-criada
+                setTimeout(() => {
+                    const newConversationItem = document.querySelector(`.conversation-item[data-room-id="${newRoomId}"]`);
+                    if(newConversationItem) newConversationItem.click();
+                }, 300);
+            }
+            
+        } else {
+            alert('Erro ao enviar: ' + result.message);
+        }
+    } catch(error) {
+        console.error('Erro ao enviar mensagem:', error);
+        alert('Erro ao enviar mensagem: ' + error.message);
+    } finally {
+        messageInput.disabled = false;
+        if (sendBtn) sendBtn.disabled = false;
+        messageInput.focus();
     }
+}
     
     async function saveTemplate() {
         if (!document.getElementById('template-id') || !document.getElementById('template-title') || !document.getElementById('template-content')) {
@@ -1300,4 +1288,36 @@ function formatDateForServer(dateTimeString) {
         clearInterval(conversationsPolling);
         clearInterval(pollingInterval);
     });
+
+    // Função auxiliar para formatar a data para o servidor
+function formatDateForServer(dateTimeString) {
+    const dateObj = new Date(dateTimeString);
+    if (isNaN(dateObj.getTime())) {
+        return dateTimeString; // Se não conseguir converter, retorna o original
+    }
+    
+    // Formata para YYYY-MM-DD HH:MM:SS
+    return dateObj.getFullYear() + '-' + 
+           String(dateObj.getMonth() + 1).padStart(2, '0') + '-' + 
+           String(dateObj.getDate()).padStart(2, '0') + ' ' + 
+           String(dateObj.getHours()).padStart(2, '0') + ':' + 
+           String(dateObj.getMinutes()).padStart(2, '0') + ':' + 
+           String(dateObj.getSeconds()).padStart(2, '0');
+}
+
+function initializeTemplateEmojiPicker() {
+    const templateEmojiBtn = document.getElementById('template-emoji-btn');
+    const templateContent = document.getElementById('template-content');
+
+    if (templateEmojiBtn && templateContent) {
+        const picker = new EmojiPicker({
+            trigger: [templateEmojiBtn],
+            position: 'top',
+            insertInto: templateContent
+        });
+    }
+}
+
+    setupBroadcastTemplateButton();
+    initializeTemplateEmojiPicker();
 });

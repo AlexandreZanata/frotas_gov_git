@@ -11,7 +11,7 @@ class ChatController
 {
     private $conn;
     private $currentUser;
-    private $uploadDir = '../../uploads/chat/';
+    private $uploadDir = __DIR__ . '/../../public/uploads/chat/';
 
     public function __construct()
     {
@@ -722,26 +722,24 @@ public function api_save_template()
         $title = trim($data['title'] ?? '');
         $content = trim($data['content'] ?? '');
         $scope = $data['scope'] ?? 'personal';
+        $styles = $data['styles'] ?? null; // Novo campo de estilos
         $templateId = filter_var($data['template_id'] ?? 0, FILTER_VALIDATE_INT);
         
-        // Validações
         if (empty($title) || empty($content)) {
             throw new Exception("Título e conteúdo são obrigatórios");
         }
         
-        // Validar o escopo com base na role
         if ($this->currentUser['role_id'] == 2 && $scope == 'global') {
-            $scope = 'sector'; // Gestores setoriais só podem criar templates de setor, não globais
+            $scope = 'sector';
         }
         
         if ($this->currentUser['role_id'] > 2 && ($scope == 'global' || $scope == 'sector')) {
-            $scope = 'personal'; // Usuários normais só podem criar templates pessoais
+            $scope = 'personal';
         }
         
         $this->conn->beginTransaction();
         
         if ($templateId) {
-            // Verificar se o template existe e se o usuário tem permissão para editá-lo
             $stmt = $this->conn->prepare("SELECT * FROM chat_message_templates WHERE id = ?");
             $stmt->execute([$templateId]);
             $template = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -750,18 +748,15 @@ public function api_save_template()
                 throw new Exception("Template não encontrado");
             }
             
-            // Verificar permissão: apenas o criador ou admin geral pode editar
             if ($template['creator_id'] != $this->currentUser['id'] && $this->currentUser['role_id'] != 1) {
                 throw new Exception("Você não tem permissão para editar este template");
             }
             
-            // Atualizar o template
-            $stmt = $this->conn->prepare("UPDATE chat_message_templates SET title = ?, content = ?, scope = ? WHERE id = ?");
-            $stmt->execute([$title, $content, $scope, $templateId]);
+            $stmt = $this->conn->prepare("UPDATE chat_message_templates SET title = ?, content = ?, scope = ?, styles = ? WHERE id = ?");
+            $stmt->execute([$title, $content, $scope, $styles, $templateId]);
         } else {
-            // Criar novo template
-            $stmt = $this->conn->prepare("INSERT INTO chat_message_templates (creator_id, title, content, scope) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$this->currentUser['id'], $title, $content, $scope]);
+            $stmt = $this->conn->prepare("INSERT INTO chat_message_templates (creator_id, title, content, scope, styles) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$this->currentUser['id'], $title, $content, $scope, $styles]);
             $templateId = $this->conn->lastInsertId();
         }
         

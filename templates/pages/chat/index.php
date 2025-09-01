@@ -34,8 +34,8 @@
     if ($hasTemplateSupport || $hasFileSupport): 
     ?>
     <!-- Emoji picker -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/emoji-picker-element@1.18.3/index.css">
-    <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1.18.3/index.js"></script>
+<link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/libs/emoji-picker.css">
+<script type="module" src="<?php echo BASE_URL; ?>/assets/libs/emoji-picker.js"></script>
     <?php endif; ?>
 </head>
 <body>
@@ -101,7 +101,7 @@
             </div>
             <div class="chat-modal-body">
                 <textarea id="broadcast-message-text" placeholder="Digite sua mensagem..." rows="5"></textarea>
-                
+                <button id="use-template-broadcast-btn" class="btn-secondary" style="margin-top: 10px;">Usar Modelo</button>
                 <div class="broadcast-options">
                     <label>
                         <input type="checkbox" id="create-group-checkbox"> 
@@ -193,6 +193,10 @@
                     <div class="form-group">
                         <label for="template-content">Conteúdo:</label>
                         <textarea id="template-content" placeholder="Conteúdo da mensagem" rows="5"></textarea>
+                    </div>
+                      <div class="form-group">
+                        <label for="template-color">Cor da Mensagem:</label>
+                        <input type="color" id="template-color" value="#cfe2ff">
                     </div>
                     <?php if ($user_role <= 2): ?>
                     <div class="form-group">

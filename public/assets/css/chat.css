@@ -810,3 +810,16 @@ emoji-picker {
     border-radius: 8px !important;
     box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1) !important;
 }
+/* Correção para altura total do chat */
+.main-content {
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Ocupa a altura toda da janela */
+    padding: 0; /* Remove padding para o chat colar nas bordas */
+}
+
+.main-content > .chat-container {
+    flex-grow: 1; /* Faz o container do chat crescer para preencher o espaço */
+    border-radius: 0; /* Remove bordas arredondadas quando em tela cheia */
+    box-shadow: none; /* Remove sombra desnecessária */
+}
