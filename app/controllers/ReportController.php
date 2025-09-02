@@ -7,31 +7,36 @@ if (!defined('SYSTEM_LOADED')) {
 require_once __DIR__ . '/../security/Auth.php';
 require_once __DIR__ . '/../core/Database.php';
 require_once __DIR__ . '/../core/ReportCalculations.php';
+// Inclua o TCPDF se não estiver no autoloader
+require_once __DIR__ . '/../../vendor/tecnickcom/tcpdf/tcpdf.php';
+
 
 class ReportController
 {
     private $conn;
-    private $secretariatId;
-    private $secretariatName;
 
     public function __construct()
     {
         Auth::checkAuthentication();
-        if ($_SESSION['user_role_id'] != 2) { // Apenas Gestor Setorial
+        // ATUALIZAÇÃO 1: Permitir acesso para Admin Geral (1) e Gestor de Setor (2)
+        if (!in_array($_SESSION['user_role_id'], [1, 2])) {
             show_error_page('Acesso Negado', 'Você não tem permissão para acessar esta página.', 403);
         }
 
         $database = new Database();
         $this->conn = $database->getConnection();
-        $this->secretariatId = $_SESSION['user_secretariat_id'];
-
-        $stmt = $this->conn->prepare("SELECT name FROM secretariats WHERE id = ?");
-        $stmt->execute([$this->secretariatId]);
-        $this->secretariatName = $stmt->fetchColumn() ?: 'Secretaria não informada';
     }
 
     public function index()
     {
+        $secretariats = [];
+        // ATUALIZAÇÃO 2: Se for Admin, busca todas as secretarias para o filtro
+        if ($_SESSION['user_role_id'] == 1) {
+            $stmt = $this->conn->query("SELECT id, name FROM secretariats ORDER BY name ASC");
+            $secretariats = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }
+
+        // Passa a lista de secretarias para a view
         require_once __DIR__ . '/../../templates/pages/sector_manager/reports.php';
     }
 
@@ -42,13 +47,40 @@ class ReportController
         $endDate = $_GET['end_date'] ?? date('Y-m-t');
         $userId = filter_input(INPUT_GET, 'user_id', FILTER_VALIDATE_INT) ?: null;
         $vehicleId = filter_input(INPUT_GET, 'vehicle_id', FILTER_VALIDATE_INT) ?: null;
+        // ATUALIZAÇÃO 3: Captura o filtro de secretaria (para o Admin)
+        $filterSecretariatId = filter_input(INPUT_GET, 'secretariat_id', FILTER_VALIDATE_INT) ?: null;
+        
         $endDateSql = $endDate . ' 23:59:59';
         $periodoFormatado = date('d/m/Y', strtotime($startDate)) . ' a ' . date('d/m/Y', strtotime($endDate));
 
-        // --- 2. LÓGICA DE BUSCA DE DADOS REESTRUTURADA ---
-        $params = [':secretariat_id' => $this->secretariatId, ':start_date' => $startDate, ':end_date' => $endDateSql];
-        $runsWhere = ["r.secretariat_id = :secretariat_id", "r.status = 'completed'", "r.start_time BETWEEN :start_date AND :end_date"];
-        $fuelingsWhere = ["f.secretariat_id = :secretariat_id", "f.created_at BETWEEN :start_date AND :end_date"];
+        // --- 2. LÓGICA DE BUSCA DINÂMICA ---
+        $params = [':start_date' => $startDate, ':end_date' => $endDateSql];
+        $runsWhere = ["r.status = 'completed'", "r.start_time BETWEEN :start_date AND :end_date"];
+        $fuelingsWhere = ["f.created_at BETWEEN :start_date AND :end_date"];
+
+        // ATUALIZAÇÃO 4: Adiciona o filtro de secretaria dinamicamente
+        $secretariatName = '';
+        if ($_SESSION['user_role_id'] == 1) { // Admin Geral
+            if ($filterSecretariatId) {
+                $runsWhere[] = "r.secretariat_id = :secretariat_id";
+                $fuelingsWhere[] = "f.secretariat_id = :secretariat_id";
+                $params[':secretariat_id'] = $filterSecretariatId;
+                
+                $stmtName = $this->conn->prepare("SELECT name FROM secretariats WHERE id = ?");
+                $stmtName->execute([$filterSecretariatId]);
+                $secretariatName = $stmtName->fetchColumn();
+            } else {
+                $secretariatName = 'Todas as Secretarias'; // Sem filtro, pega de todas
+            }
+        } else { // Gestor de Setor
+            $runsWhere[] = "r.secretariat_id = :secretariat_id";
+            $fuelingsWhere[] = "f.secretariat_id = :secretariat_id";
+            $params[':secretariat_id'] = $_SESSION['user_secretariat_id'];
+
+            $stmtName = $this->conn->prepare("SELECT name FROM secretariats WHERE id = ?");
+            $stmtName->execute([$_SESSION['user_secretariat_id']]);
+            $secretariatName = $stmtName->fetchColumn();
+        }
 
         if ($userId) {
             $runsWhere[] = "r.driver_id = :user_id";
@@ -130,10 +162,11 @@ class ReportController
             }
         };
 
-        $pdf->setReportData($periodoFormatado, $this->secretariatName);
+        // ATUALIZAÇÃO 5: Usa o nome da secretaria dinâmico
+        $pdf->setReportData($periodoFormatado, $secretariatName);
         $pdf->SetCreator('Frotas Gov');
         $pdf->SetAuthor($_SESSION['user_name']);
-        $pdf->SetTitle('Relatório da Secretaria - ' . $this->secretariatName);
+        $pdf->SetTitle('Relatório - ' . $secretariatName);
         $pdf->SetMargins(10, 35, 10);
         $pdf->SetAutoPageBreak(TRUE, 25);
         $pdf->AddPage();
@@ -225,7 +258,7 @@ class ReportController
             }
         }
         
-        $filename = 'Relatorio_Secretaria_' . str_replace(' ', '_', $this->secretariatName) . '_' . date('Y-m-d') . '.pdf';
+        $filename = 'Relatorio_' . str_replace(' ', '_', $secretariatName) . '_' . date('Y-m-d') . '.pdf';
         $pdf->Output($filename, 'I');
         exit();
     }

@@ -17,27 +17,32 @@ class DashboardController
         $this->conn = $db->getConnection();
     }
 
-    public function index()
-    {
-        Auth::checkAuthentication();
+public function index()
+{
+    Auth::checkAuthentication();
 
-        try {
-            if (isset($_SESSION['user_role_id'])) {
-                $role_id = $_SESSION['user_role_id'];
+    try {
+        if (isset($_SESSION['user_role_id'])) {
+            $role_id = $_SESSION['user_role_id'];
 
-                if ($role_id == 1 || $role_id == 2) {
-                    $secretariatId = ($role_id == 2) ? $_SESSION['user_secretariat_id'] : null;
-                    $this->loadDashboard($secretariatId);
-                    return;
-                }
+            // Lógica ajustada para mais clareza
+            if ($role_id == 1) { // Administrador Geral
+                $this->loadDashboard(null); // Passa null para não filtrar por secretaria
+                return;
+            } elseif ($role_id == 2) { // Gestor Setorial
+                $this->loadDashboard($_SESSION['user_secretariat_id']);
+                return;
             }
-            
-            require_once __DIR__ . '/../../templates/pages/dashboard.php';
-
-        } catch (PDOException $e) {
-            show_error_page('Erro de Banco de Dados', 'Não foi possível carregar os dados do painel. Detalhes: ' . $e->getMessage(), 500);
         }
+        
+        // Para outras roles (como motorista), carrega o dashboard padrão
+        require_once __DIR__ . '/../../templates/pages/dashboard.php';
+
+    } catch (PDOException $e) {
+        show_error_page('Erro de Banco de Dados', 'Não foi possível carregar os dados do painel. Detalhes: ' . $e->getMessage(), 500);
     }
+}
+
 
     private function loadDashboard(?int $secretariatId = null)
     {

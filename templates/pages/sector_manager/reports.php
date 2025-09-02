@@ -41,6 +41,21 @@
                 <h2 class="section-title">Gerar Relatório Detalhado</h2>
                 <form action="<?php echo BASE_URL; ?>/sector-manager/reports/generate" method="GET" target="_blank">
                     
+                    <!-- Adicionar este bloco em /templates/pages/sector_manager/reports.php -->
+<?php if ($_SESSION['user_role_id'] == 1 && !empty($secretariats)): ?>
+    <div class="form-group">
+        <label for="secretariat_id">Secretaria</label>
+        <select name="secretariat_id" id="secretariat_id" class="form-control">
+            <option value="">Todas as Secretarias</option>
+            <?php foreach ($secretariats as $secretariat): ?>
+                <option value="<?= htmlspecialchars($secretariat['id']) ?>">
+                    <?= htmlspecialchars($secretariat['name']) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+<?php endif; ?>
+                    
                     <div class="form-row">
                         <div class="form-group search-results-wrapper">
                             <label for="user_search">Filtrar por Usuário (Opcional)</label>

@@ -55,7 +55,8 @@ class DiarioBordoController
         unset($_SESSION['run_vehicle_id']);
         unset($_SESSION['run_id']);
         
-        require_once __DIR__ . '/../../templates/pages/diario_bordo/select_vehicle.php';
+        $view_path = __DIR__ . '/../../templates/pages/diario_bordo/select_vehicle.php';
+        require_once __DIR__ . '/../../templates/layouts/internal_layout.php';
     }
 
     public function ajax_get_vehicle()
@@ -140,7 +141,8 @@ class DiarioBordoController
         }
         unset($item);
 
-        require_once __DIR__ . '/../../templates/pages/diario_bordo/checklist.php';
+        $view_path = __DIR__ . '/../../templates/pages/diario_bordo/checklist.php';
+        require_once __DIR__ . '/../../templates/layouts/internal_layout.php';
     }
 
     public function storeChecklist()
@@ -247,7 +249,8 @@ class DiarioBordoController
 
         $last_km = $last_run['end_km'] ?? 0;
 
-        require_once __DIR__ . '/../../templates/pages/diario_bordo/start_run.php';
+        $view_path = __DIR__ . '/../../templates/pages/diario_bordo/start_run.php';
+        require_once __DIR__ . '/../../templates/layouts/internal_layout.php';
     }
 
     public function storeStart()
@@ -331,7 +334,8 @@ class DiarioBordoController
         $fuel_types_stmt = $this->conn->query("SELECT id, name FROM fuel_types ORDER BY name");
         $fuel_types = $fuel_types_stmt->fetchAll();
 
-        require_once __DIR__ . '/../../templates/pages/diario_bordo/finish_run.php';
+        $view_path = __DIR__ . '/../../templates/pages/diario_bordo/finish_run.php';
+        require_once __DIR__ . '/../../templates/layouts/internal_layout.php';
     }
 
     public function storeFinish()
