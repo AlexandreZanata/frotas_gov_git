@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Aug 29, 2025 at 06:22 PM
+-- Generation Time: Sep 02, 2025 at 10:23 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -20,6 +20,152 @@ SET time_zone = "+00:00";
 --
 -- Database: `frotas_gov`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `audit_logs`
+--
+
+CREATE TABLE `audit_logs` (
+  `id` bigint(20) NOT NULL,
+  `user_id` int(11) DEFAULT NULL COMMENT 'Usuário que realizou a ação. NULL se for uma ação do sistema.',
+  `action` varchar(50) NOT NULL COMMENT 'Ex: create, update, delete, login_success, login_fail',
+  `table_name` varchar(100) DEFAULT NULL COMMENT 'A tabela que foi afetada',
+  `record_id` int(11) DEFAULT NULL COMMENT 'O ID do registro que foi afetado',
+  `old_value` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`old_value`)),
+  `new_value` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`new_value`)),
+  `ip_address` varchar(45) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `auth_tokens`
+--
+
+CREATE TABLE `auth_tokens` (
+  `id` int(11) NOT NULL,
+  `selector` varchar(255) NOT NULL,
+  `hashed_validator` varchar(255) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `expires_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `chat_messages`
+--
+
+CREATE TABLE `chat_messages` (
+  `id` int(11) NOT NULL,
+  `room_id` int(11) NOT NULL,
+  `sender_id` int(11) DEFAULT NULL,
+  `message_type` enum('standard','notification','broadcast') NOT NULL DEFAULT 'standard',
+  `message` text DEFAULT NULL,
+  `file_path` varchar(255) DEFAULT NULL,
+  `file_type` varchar(100) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `chat_message_recipients`
+--
+
+CREATE TABLE `chat_message_recipients` (
+  `id` int(11) NOT NULL,
+  `message_id` int(11) NOT NULL,
+  `recipient_id` int(11) NOT NULL,
+  `is_read` tinyint(1) NOT NULL DEFAULT 0,
+  `read_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `chat_message_templates`
+--
+
+CREATE TABLE `chat_message_templates` (
+  `id` int(11) NOT NULL,
+  `creator_id` int(11) DEFAULT NULL,
+  `title` varchar(100) NOT NULL,
+  `content` text NOT NULL,
+  `scope` enum('personal','sector','global') NOT NULL DEFAULT 'personal' COMMENT 'personal (só o criador), sector (gestores da mesma secretaria), global (só admin geral)',
+  `styles` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`styles`)),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `chat_participants`
+--
+
+CREATE TABLE `chat_participants` (
+  `id` int(11) NOT NULL,
+  `room_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `joined_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `chat_rooms`
+--
+
+CREATE TABLE `chat_rooms` (
+  `id` int(11) NOT NULL,
+  `creator_id` int(11) DEFAULT NULL COMMENT 'Usuário que iniciou a conversa',
+  `name` varchar(150) DEFAULT NULL COMMENT 'Nome do grupo (para futuras implementações)',
+  `is_group` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `checklists`
+--
+
+CREATE TABLE `checklists` (
+  `id` int(11) NOT NULL,
+  `run_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `vehicle_id` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `checklist_answers`
+--
+
+CREATE TABLE `checklist_answers` (
+  `id` int(11) NOT NULL,
+  `checklist_id` int(11) NOT NULL,
+  `item_id` int(11) NOT NULL,
+  `status` enum('ok','attention','problem') NOT NULL,
+  `notes` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `checklist_items`
+--
+
+CREATE TABLE `checklist_items` (
+  `id` int(11) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `description` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -130,6 +276,24 @@ CREATE TABLE `runs` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `scheduled_messages`
+--
+
+CREATE TABLE `scheduled_messages` (
+  `id` int(11) NOT NULL,
+  `sender_id` int(11) NOT NULL,
+  `message` text NOT NULL,
+  `recipient_type` enum('user','secretariat','role','all') NOT NULL,
+  `recipient_ids` text DEFAULT NULL COMMENT 'IDs separados por vírgula (ex: 1,2,3)',
+  `send_at` datetime NOT NULL,
+  `status` enum('pending','sent','error') NOT NULL DEFAULT 'pending',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `processed_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `secretariats`
 --
 
@@ -188,6 +352,82 @@ CREATE TABLE `vehicles` (
 --
 
 --
+-- Indexes for table `audit_logs`
+--
+ALTER TABLE `audit_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Indexes for table `auth_tokens`
+--
+ALTER TABLE `auth_tokens`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `selector_idx` (`selector`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Indexes for table `chat_messages`
+--
+ALTER TABLE `chat_messages`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `room_id` (`room_id`),
+  ADD KEY `sender_id` (`sender_id`);
+
+--
+-- Indexes for table `chat_message_recipients`
+--
+ALTER TABLE `chat_message_recipients`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `message_recipient_unique` (`message_id`,`recipient_id`),
+  ADD KEY `recipient_id` (`recipient_id`);
+
+--
+-- Indexes for table `chat_message_templates`
+--
+ALTER TABLE `chat_message_templates`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `creator_id` (`creator_id`);
+
+--
+-- Indexes for table `chat_participants`
+--
+ALTER TABLE `chat_participants`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `room_user_unique` (`room_id`,`user_id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Indexes for table `chat_rooms`
+--
+ALTER TABLE `chat_rooms`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `creator_id` (`creator_id`);
+
+--
+-- Indexes for table `checklists`
+--
+ALTER TABLE `checklists`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `run_id` (`run_id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `vehicle_id` (`vehicle_id`);
+
+--
+-- Indexes for table `checklist_answers`
+--
+ALTER TABLE `checklist_answers`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `checklist_id` (`checklist_id`),
+  ADD KEY `item_id` (`item_id`);
+
+--
+-- Indexes for table `checklist_items`
+--
+ALTER TABLE `checklist_items`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `departments`
 --
 ALTER TABLE `departments`
@@ -244,6 +484,14 @@ ALTER TABLE `runs`
   ADD KEY `runs_ibfk_3` (`secretariat_id`);
 
 --
+-- Indexes for table `scheduled_messages`
+--
+ALTER TABLE `scheduled_messages`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `sender_id` (`sender_id`),
+  ADD KEY `send_at` (`send_at`,`status`);
+
+--
 -- Indexes for table `secretariats`
 --
 ALTER TABLE `secretariats`
@@ -272,6 +520,66 @@ ALTER TABLE `vehicles`
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `audit_logs`
+--
+ALTER TABLE `audit_logs`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `auth_tokens`
+--
+ALTER TABLE `auth_tokens`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `chat_messages`
+--
+ALTER TABLE `chat_messages`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `chat_message_recipients`
+--
+ALTER TABLE `chat_message_recipients`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `chat_message_templates`
+--
+ALTER TABLE `chat_message_templates`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `chat_participants`
+--
+ALTER TABLE `chat_participants`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `chat_rooms`
+--
+ALTER TABLE `chat_rooms`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `checklists`
+--
+ALTER TABLE `checklists`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `checklist_answers`
+--
+ALTER TABLE `checklist_answers`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `checklist_items`
+--
+ALTER TABLE `checklist_items`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `departments`
@@ -316,6 +624,12 @@ ALTER TABLE `runs`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `scheduled_messages`
+--
+ALTER TABLE `scheduled_messages`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `secretariats`
 --
 ALTER TABLE `secretariats`
@@ -336,6 +650,66 @@ ALTER TABLE `vehicles`
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `audit_logs`
+--
+ALTER TABLE `audit_logs`
+  ADD CONSTRAINT `audit_logs_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `auth_tokens`
+--
+ALTER TABLE `auth_tokens`
+  ADD CONSTRAINT `auth_tokens_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `chat_messages`
+--
+ALTER TABLE `chat_messages`
+  ADD CONSTRAINT `chat_messages_ibfk_1` FOREIGN KEY (`room_id`) REFERENCES `chat_rooms` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `chat_messages_ibfk_2` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `chat_message_recipients`
+--
+ALTER TABLE `chat_message_recipients`
+  ADD CONSTRAINT `chat_message_recipients_ibfk_1` FOREIGN KEY (`message_id`) REFERENCES `chat_messages` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `chat_message_recipients_ibfk_2` FOREIGN KEY (`recipient_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `chat_message_templates`
+--
+ALTER TABLE `chat_message_templates`
+  ADD CONSTRAINT `chat_message_templates_ibfk_1` FOREIGN KEY (`creator_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `chat_participants`
+--
+ALTER TABLE `chat_participants`
+  ADD CONSTRAINT `chat_participants_ibfk_1` FOREIGN KEY (`room_id`) REFERENCES `chat_rooms` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `chat_participants_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `chat_rooms`
+--
+ALTER TABLE `chat_rooms`
+  ADD CONSTRAINT `chat_rooms_ibfk_1` FOREIGN KEY (`creator_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `checklists`
+--
+ALTER TABLE `checklists`
+  ADD CONSTRAINT `checklists_ibfk_1` FOREIGN KEY (`run_id`) REFERENCES `runs` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `checklists_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `checklists_ibfk_3` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `checklist_answers`
+--
+ALTER TABLE `checklist_answers`
+  ADD CONSTRAINT `checklist_answers_ibfk_1` FOREIGN KEY (`checklist_id`) REFERENCES `checklists` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `checklist_answers_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `checklist_items` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `departments`
@@ -370,12 +744,18 @@ ALTER TABLE `runs`
   ADD CONSTRAINT `runs_ibfk_3` FOREIGN KEY (`secretariat_id`) REFERENCES `secretariats` (`id`) ON DELETE SET NULL;
 
 --
+-- Constraints for table `scheduled_messages`
+--
+ALTER TABLE `scheduled_messages`
+  ADD CONSTRAINT `scheduled_messages_ibfk_1` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `users`
 --
 ALTER TABLE `users`
   ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`),
   ADD CONSTRAINT `users_ibfk_2` FOREIGN KEY (`secretariat_id`) REFERENCES `secretariats` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `users_ibfk_3` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON DEALETE SET NULL;
+  ADD CONSTRAINT `users_ibfk_3` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `vehicles`
