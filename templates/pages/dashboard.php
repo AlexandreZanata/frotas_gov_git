@@ -17,6 +17,10 @@
         <nav class="sidebar-nav">
             <ul>
                 <li><a href="#" class="active"><i class="fas fa-tachometer-alt"></i> Painel</a></li>
+
+            <li class="<?php echo (strpos($current_uri, 'profile') !== false) ? 'active' : ''; ?>">
+                <a href="<?php echo BASE_URL; ?>/profile"><i class="fas fa-user-circle"></i> Meu Perfil</a>
+            </li>
                 
             <?php if ($_SESSION['user_role_id'] == 4): ?>
             <li class="<?php echo (strpos($current_uri, 'runs/history') !== false) ? 'active' : ''; ?>">

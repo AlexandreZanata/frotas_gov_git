@@ -17,6 +17,10 @@
         <nav class="sidebar-nav">
             <ul>
                 <li><a href="#" class="active"><i class="fas fa-tachometer-alt"></i> Painel</a></li>
+
+                <li class="<?php echo (strpos($current_uri, 'profile') !== false) ? 'active' : ''; ?>">
+                    <a href="<?php echo BASE_URL; ?>/profile"><i class="fas fa-user-circle"></i> Meu Perfil</a>
+                </li>
                 <li><a href="<?php echo BASE_URL; ?>/sector-manager/vehicles"><i class="fas fa-car"></i> Veículos</a></li>
                 <li class="<?php echo ($current_page == 'records') ? 'active' : ''; ?>">
                     <a href="<?php echo BASE_URL; ?>/sector-manager/records"><i class="fas fa-list-alt"></i> Gerenciar Registros</a>

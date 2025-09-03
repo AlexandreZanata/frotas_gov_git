@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Sep 03, 2025 at 08:51 PM
+-- Generation Time: Sep 03, 2025 at 11:13 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -322,6 +322,7 @@ CREATE TABLE `users` (
   `cnh_number` varchar(20) DEFAULT NULL,
   `cnh_expiry_date` date DEFAULT NULL,
   `profile_photo_path` varchar(255) DEFAULT NULL,
+  `cnh_photo_path` varchar(255) DEFAULT NULL,
   `phone` varchar(25) DEFAULT NULL,
   `status` enum('active','inactive') NOT NULL DEFAULT 'active',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),

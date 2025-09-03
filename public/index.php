@@ -199,6 +199,15 @@ $router->post('transfers/return', 'VehicleTransferController@returnVehicle'); //
 $router->get('transfers/ajax/get-ongoing', 'VehicleTransferController@ajax_get_ongoing_transfers'); // Rota para buscar empréstimos ativos
 $router->get('transfers/ajax/get-pending', 'VehicleTransferController@ajax_get_pending_transfers'); // Rota para buscar pendentes
 
+/*
+|--------------------------------------------------------------------------
+| Rotas de Perfil do Usuário
+|--------------------------------------------------------------------------
+*/
+$router->get('profile', 'ProfileController@index');
+$router->post('profile/update', 'ProfileController@update');
+$router->post('profile/change-password', 'ProfileController@changePassword');
+
 
 /*
 |--------------------------------------------------------------------------
