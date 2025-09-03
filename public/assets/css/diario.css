@@ -10,6 +10,10 @@
     --diario-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
+.main-content {
+    padding: 0;
+}
+
 body {
     font-family: Arial, sans-serif;
     background-color: var(--diario-background);
@@ -19,7 +23,7 @@ body {
 
 /* Container principal que centraliza o conteúdo em telas maiores */
 .diario-container {
-    max-width: 600px;
+    max-width: 100%;
     margin: 0 auto;
     background-color: var(--diario-card-bg);
     min-height: 100vh;
@@ -350,3 +354,4 @@ body {
     margin-top: 15px;
     text-align: center;
 }
+

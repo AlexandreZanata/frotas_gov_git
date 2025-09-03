@@ -2,7 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- GERENCIAMENTO DE ABAS COM SESSIONSTORAGE ---
     const setActiveTabFromStorage = () => {
         const activeTabId = sessionStorage.getItem('activeRecordTab') || 'run';
-        document.querySelector(`.tab-link[data-tab="${activeTabId}"]`).click();
+        const tabLink = document.querySelector(`.tab-link[data-tab="${activeTabId}"]`);
+        if (tabLink) tabLink.click();
     };
     const saveActiveTabToStorage = (tabId) => {
         sessionStorage.setItem('activeRecordTab', tabId);
@@ -22,6 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const mainFormTitle = document.getElementById('mainFormTitle');
     const runsTableContainer = document.getElementById('runs-table-container');
     const fuelingsTableContainer = document.getElementById('fuelings-table-container');
+    // NOVO: Referência ao select de filtro de secretaria (só existe para Admin)
+    const filterSecretariatSelect = document.getElementById('filter_secretariat_id');
 
     // --- ELEMENTOS DAS ABAS E FORMULÁRIOS ---
     const tabLinks = document.querySelectorAll('.tab-link');
@@ -52,22 +55,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const fuelingSearchInput = document.getElementById('fuelingSearchInput');
     let isManuallyEdited = false;
 
-    isManualStationCheckbox.addEventListener('change', () => {
-        const isManual = isManualStationCheckbox.checked;
-        if (isManual) {
-            gasStationSelectContainer.style.display = 'none';
-            gasStationSelect.required = false;
-            gasStationSelect.value = '';
-            gasStationNameContainer.style.display = 'block';
-            gasStationNameInput.required = true;
-        } else {
-            gasStationSelectContainer.style.display = 'block';
-            gasStationSelect.required = true;
-            gasStationNameContainer.style.display = 'none';
-            gasStationNameInput.required = false;
-            gasStationNameInput.value = '';
-        }
-    });
+    if (isManualStationCheckbox) {
+        isManualStationCheckbox.addEventListener('change', () => {
+            const isManual = isManualStationCheckbox.checked;
+            if (isManual) {
+                gasStationSelectContainer.style.display = 'none';
+                gasStationSelect.required = false;
+                gasStationSelect.value = '';
+                gasStationNameContainer.style.display = 'block';
+                gasStationNameInput.required = true;
+            } else {
+                gasStationSelectContainer.style.display = 'block';
+                gasStationSelect.required = true;
+                gasStationNameContainer.style.display = 'none';
+                gasStationNameInput.required = false;
+                gasStationNameInput.value = '';
+            }
+        });
+    }
 
     // --- CONTROLE DAS ABAS E VISIBILIDADE DAS TABELAS ---
     tabLinks.forEach(link => {
@@ -130,7 +135,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             debounceTimer = setTimeout(async () => {
                 try {
-                    const response = await fetch(`${url}?term=${encodeURIComponent(term)}`);
+                    // MODIFICADO: Adiciona o parâmetro secretariat_id à URL se o filtro estiver presente
+                    let requestUrl = `${url}?term=${encodeURIComponent(term)}`;
+                    
+                    // Verifica se é admin e se tem filtro de secretaria selecionado
+                    if (IS_ADMIN && filterSecretariatSelect) {
+                        const secretariatId = filterSecretariatSelect.value;
+                        if (secretariatId) {
+                            requestUrl += `&secretariat_id=${secretariatId}`;
+                        }
+                    }
+                    
+                    const response = await fetch(requestUrl);
                     const result = await response.json();
                     if (result && result.success && Array.isArray(result.data)) {
                         const data = result.data;
@@ -226,37 +242,60 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 300);
     });
 
+    // NOVO: Adiciona event listener para o filtro de secretaria
+    if (IS_ADMIN && filterSecretariatSelect) {
+        filterSecretariatSelect.addEventListener('change', () => {
+            fetchRuns(1);
+            fetchFuelings(1);
+        });
+    }
+
     // --- LÓGICA DE FETCH GENÉRICA ---
     const fetchRuns = async (page = 1) => {
         if (!runsTableBody) return;
-        runsTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Carregando...</td></tr>';
+        // Calcula o número de colunas com base no tipo de usuário
+        const colSpan = IS_ADMIN ? 7 : 6;
+        runsTableBody.innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center;">Carregando...</td></tr>`;
         const searchTerm = runSearchInput ? runSearchInput.value.trim() : '';
+        
         try {
-            const response = await fetch(`${BASE_URL}/sector-manager/ajax/search-runs?page=${page}&term=${encodeURIComponent(searchTerm)}`);
+            // MODIFICADO: Adiciona o parâmetro secretariat_id à URL se o filtro estiver presente
+            let url = `${BASE_URL}/sector-manager/ajax/search-runs?page=${page}&term=${encodeURIComponent(searchTerm)}`;
+            if (IS_ADMIN && filterSecretariatSelect && filterSecretariatSelect.value) {
+                url += `&secretariat_id=${filterSecretariatSelect.value}`;
+            }
+            
+            const response = await fetch(url);
             const result = await response.json();
             if (result.success && result.data) {
                 renderRunsTable(result.data.runs);
                 runsPaginationContainer.innerHTML = result.data.paginationHtml || '';
             } else {
-                runsTableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">${result.message || 'Nenhuma corrida encontrada.'}</td></tr>`;
+                runsTableBody.innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center;">${result.message || 'Nenhuma corrida encontrada.'}</td></tr>`;
             }
         } catch (error) {
             console.error("Erro ao buscar corridas:", error);
-            runsTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color: red;">Erro ao carregar dados.</td></tr>';
+            runsTableBody.innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center; color: red;">Erro ao carregar dados.</td></tr>`;
         }
     };
 
     const renderRunsTable = (runs) => {
+        // Calcula o número de colunas com base no tipo de usuário
+        const colSpan = IS_ADMIN ? 7 : 6;
         if (!runs || runs.length === 0) {
-            runsTableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Nenhuma corrida encontrada.</td></tr>`;
+            runsTableBody.innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center;">Nenhuma corrida encontrada.</td></tr>`;
             return;
         }
+        
         runsTableBody.innerHTML = runs.map(run => {
             const kmRodado = (run.end_km && run.start_km) ? (run.end_km - run.start_km) : 'N/A';
             const startTime = new Date(run.start_time).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+            
+            // Constrói a linha, incluindo a coluna de secretaria se for Admin
             return `
                 <tr data-id="${run.id}" data-destination="${escapeHTML(run.destination)}">
                     <td>${startTime}</td>
+                    ${IS_ADMIN ? `<td>${escapeHTML(run.secretariat_name || 'N/A')}</td>` : ''}
                     <td>${escapeHTML(run.vehicle_prefix)}</td>
                     <td>${escapeHTML(run.driver_name)}</td>
                     <td>${escapeHTML(run.destination)}</td>
@@ -271,31 +310,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const fetchFuelings = async (page = 1) => {
         if (!fuelingsTableBody) return;
-        fuelingsTableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Carregando...</td></tr>';
+        // Calcula o número de colunas com base no tipo de usuário
+        const colSpan = IS_ADMIN ? 8 : 7;
+        fuelingsTableBody.innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center;">Carregando...</td></tr>`;
         const searchTerm = fuelingSearchInput ? fuelingSearchInput.value.trim() : '';
+        
         try {
-            const response = await fetch(`${BASE_URL}/sector-manager/ajax/search-fuelings?page=${page}&term=${encodeURIComponent(searchTerm)}`);
+            // MODIFICADO: Adiciona o parâmetro secretariat_id à URL se o filtro estiver presente
+            let url = `${BASE_URL}/sector-manager/ajax/search-fuelings?page=${page}&term=${encodeURIComponent(searchTerm)}`;
+            if (IS_ADMIN && filterSecretariatSelect && filterSecretariatSelect.value) {
+                url += `&secretariat_id=${filterSecretariatSelect.value}`;
+            }
+            
+            const response = await fetch(url);
             const result = await response.json();
             if (result.success && result.data) {
                 renderFuelingsTable(result.data.fuelings);
                 fuelingsPaginationContainer.innerHTML = result.data.paginationHtml || '';
             } else {
-                fuelingsTableBody.innerHTML = `<tr><td colspan="7" style="text-align: center;">${result.message || 'Nenhum abastecimento encontrado.'}</td></tr>`;
+                fuelingsTableBody.innerHTML = `<tr><td colspan="${colSpan}" style="text-align: center;">${result.message || 'Nenhum abastecimento encontrado.'}</td></tr>`;
             }
         } catch (error) {
             console.error('Erro ao buscar abastecimentos:', error);
-            fuelingsTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: red;">Erro ao carregar dados.</td></tr>';
+            fuelingsTableBody.innerHTML = `<tr><td colspan="${colSpan}" style="text-align: center; color: red;">Erro ao carregar dados.</td></tr>`;
         }
     };
 
     const renderFuelingsTable = (fuelings) => {
+        // Calcula o número de colunas com base no tipo de usuário
+        const colSpan = IS_ADMIN ? 8 : 7;
         if (!fuelings || fuelings.length === 0) {
-            fuelingsTableBody.innerHTML = `<tr><td colspan="7" style="text-align: center;">Nenhum abastecimento encontrado.</td></tr>`;
+            fuelingsTableBody.innerHTML = `<tr><td colspan="${colSpan}" style="text-align: center;">Nenhum abastecimento encontrado.</td></tr>`;
             return;
         }
+        
         fuelingsTableBody.innerHTML = fuelings.map(fueling => `
             <tr data-id="${fueling.id}" data-station-name="${escapeHTML(fueling.gas_station)}">
                 <td>${new Date(fueling.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}</td>
+                ${IS_ADMIN ? `<td>${escapeHTML(fueling.secretariat_name || 'N/A')}</td>` : ''}
                 <td>${escapeHTML(fueling.vehicle_prefix)}</td>
                 <td>${escapeHTML(fueling.driver_name)}</td>
                 <td>${escapeHTML(fueling.gas_station)}</td>
@@ -338,22 +390,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // ### INÍCIO DA CORREÇÃO DO BUG ###
-    gasStationSelect.addEventListener('change', () => {
+    gasStationSelect && gasStationSelect.addEventListener('change', () => {
         isManuallyEdited = false; // Força o recálculo
         calculateFuelingValue();
     });
-    fuelTypeSelect.addEventListener('change', () => {
+    fuelTypeSelect && fuelTypeSelect.addEventListener('change', () => {
         isManuallyEdited = false; // Força o recálculo
         calculateFuelingValue();
     });
-    litersInput.addEventListener('input', () => {
+    litersInput && litersInput.addEventListener('input', () => {
         isManuallyEdited = false;
         totalValueInput.placeholder = 'Calculado automaticamente...';
         calculateFuelingValue();
     });
-    totalValueInput.addEventListener('input', () => { isManuallyEdited = true; });
-    // ### FIM DA CORREÇÃO DO BUG ###
+    totalValueInput && totalValueInput.addEventListener('input', () => { isManuallyEdited = true; });
 
 
     // --- FUNÇÕES DE AÇÃO E MODAIS ---
@@ -363,6 +413,11 @@ document.addEventListener('DOMContentLoaded', () => {
         runIdInput.value = '';
         runForm.reset();
         cancelRunEditBtn.style.display = 'none';
+        
+        // NOVO: Resetar o campo de secretaria para Admin
+        if (IS_ADMIN && document.getElementById('run_secretariat_id')) {
+            document.getElementById('run_secretariat_id').value = '';
+        }
     };
     const resetFuelingForm = () => {
         fuelingForm.action = `${BASE_URL}/sector-manager/records/fueling/store`;
@@ -374,6 +429,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('fueling_run_search').value = '';
         isManualStationCheckbox.checked = false;
         isManualStationCheckbox.dispatchEvent(new Event('change'));
+        
+        // NOVO: Resetar o campo de secretaria para Admin
+        if (IS_ADMIN && document.getElementById('fueling_secretariat_id')) {
+            document.getElementById('fueling_secretariat_id').value = '';
+        }
     };
 
     // --- DELEGAÇÃO DE EVENTOS PRINCIPAL ---
@@ -385,8 +445,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (link && link.dataset.page) {
             e.preventDefault();
             const paginationWrapper = link.closest('.pagination-wrapper');
-            if (paginationWrapper.id === 'runsPaginationContainer') fetchRuns(link.dataset.page);
-            else if (paginationWrapper.id === 'fuelingsPaginationContainer') fetchFuelings(link.dataset.page);
+            if (paginationWrapper && paginationWrapper.id === 'runsPaginationContainer') fetchRuns(link.dataset.page);
+            else if (paginationWrapper && paginationWrapper.id === 'fuelingsPaginationContainer') fetchFuelings(link.dataset.page);
         }
 
         const actionLink = target.closest('.actions a');
@@ -416,6 +476,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('end_time').value = formatDateTimeForInput(result.data.end_time);
                     document.getElementById('destination').value = result.data.destination;
                     document.getElementById('stop_point').value = result.data.stop_point || '';
+                    
+                    // NOVO: Preenche o campo de secretaria para Admin
+                    if (IS_ADMIN && document.getElementById('run_secretariat_id') && result.data.secretariat_id) {
+                        document.getElementById('run_secretariat_id').value = result.data.secretariat_id;
+                    }
+                    
                     cancelRunEditBtn.style.display = 'inline-block';
                     runForm.scrollIntoView({ behavior: 'smooth' });
                 } else {
@@ -464,6 +530,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     fuelingForm.querySelector('#liters').value = parseFloat(result.data.liters).toLocaleString('pt-BR');
                     fuelingForm.querySelector('#total_value').value = parseFloat(result.data.total_value).toLocaleString('pt-BR', {minimumFractionDigits: 2});
                     fuelingForm.querySelector('#fuel_type_id').value = result.data.fuel_type_id;
+                    
+                    // NOVO: Preenche o campo de secretaria para Admin
+                    if (IS_ADMIN && document.getElementById('fueling_secretariat_id') && result.data.secretariat_id) {
+                        document.getElementById('fueling_secretariat_id').value = result.data.secretariat_id;
+                    }
+                    
                     cancelFuelingEditBtn.style.display = 'inline-block';
                     fuelingForm.scrollIntoView({ behavior: 'smooth' });
                 } else {
@@ -507,8 +579,8 @@ document.addEventListener('DOMContentLoaded', () => {
         onRunSelectForFueling
     );
 
-    cancelRunEditBtn.addEventListener('click', (e) => { e.preventDefault(); resetRunForm(); });
-    cancelFuelingEditBtn.addEventListener('click', (e) => { e.preventDefault(); resetFuelingForm(); });
+    cancelRunEditBtn && cancelRunEditBtn.addEventListener('click', (e) => { e.preventDefault(); resetRunForm(); });
+    cancelFuelingEditBtn && cancelFuelingEditBtn.addEventListener('click', (e) => { e.preventDefault(); resetFuelingForm(); });
 
     setActiveTabFromStorage();
     fetchRuns();

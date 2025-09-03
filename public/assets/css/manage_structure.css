@@ -1,0 +1,188 @@
+/* public/assets/css/manage_structure.css */
+
+.structure-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.add-secretariat-form {
+    background-color: #fff;
+    padding: 1.5rem 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    margin-bottom: 2rem;
+}
+
+.add-secretariat-form .form-group-inline {
+    display: flex;
+    gap: 1rem;
+}
+
+.add-secretariat-form input {
+    flex-grow: 1;
+    padding: 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.structures-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 1.5rem;
+}
+
+.secretariat-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Garante que os cantos arredondados sejam mantidos */
+}
+
+.secretariat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.secretariat-name-wrapper {
+    flex-grow: 1;
+    min-width: 0; /* Permite que o flex item encolha */
+}
+
+.secretariat-name {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--primary-color);
+    cursor: pointer;
+    word-break: break-word;
+}
+
+.department-list {
+    padding: 0 1.5rem;
+    flex-grow: 1;
+}
+
+.department-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f1f5f9;
+    min-width: 0;
+}
+.department-item:last-child { border-bottom: none; }
+
+.department-name {
+    cursor: pointer;
+    flex-grow: 1;
+    word-break: break-word;
+}
+
+.no-departments {
+    color: #64748b;
+    font-style: italic;
+    text-align: center;
+    padding: 1.5rem;
+}
+
+.add-department-form {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e2e8f0;
+    background-color: #f8fafc;
+}
+
+.add-department-form .form-group-inline {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.add-department-form input {
+    flex-grow: 1;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.btn-submit-small {
+    padding: 0.5rem 1rem;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+}
+.btn-submit-small:hover {
+    background-color: #218838;
+}
+
+.actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0; /* Impede que os botões encolham */
+    padding-left: 1rem;
+}
+
+.btn-action {
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 5px;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+.btn-action:hover {
+    background-color: #f1f5f9;
+    color: var(--primary-color);
+}
+.btn-action.delete-btn:hover { color: #dc3545; }
+
+/* Estilos para edição inline */
+.inline-edit-form {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+}
+.inline-edit-input {
+    flex-grow: 1;
+    font-size: 1.2rem; /* Mesmo tamanho da fonte do h3 */
+    padding: 5px;
+    border: 1px solid var(--primary-color);
+    border-radius: 4px;
+}
+.department-item .inline-edit-input {
+    font-size: 1rem; /* Tamanho da fonte para departamentos */
+}
+
+/* Esconde o elemento original durante a edição */
+.editing {
+    display: none;
+}
+
+/* Loader */
+.loader {
+    border: 4px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 4px solid var(--primary-color);
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 2rem auto;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

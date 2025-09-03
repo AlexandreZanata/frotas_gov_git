@@ -163,6 +163,25 @@ $router->post('chat/api/schedule-message', 'ChatController@api_schedule_message'
 
 /*
 |--------------------------------------------------------------------------
+| Rotas de Admin (Estruturas)
+|--------------------------------------------------------------------------
+*/
+$router->get('admin/structure', 'StructureController@index');
+$router->get('admin/structure/ajax_get_structures', 'StructureController@ajax_get_structures');
+$router->post('admin/structure/secretariat/store', 'StructureController@storeSecretariat');
+$router->post('admin/structure/department/store', 'StructureController@storeDepartment');
+$router->post('admin/structure/secretariat/update', 'StructureController@updateSecretariat');
+$router->post('admin/structure/department/update', 'StructureController@updateDepartment');
+$router->post('admin/structure/secretariat/delete', 'StructureController@deleteSecretariat');
+$router->post('admin/structure/department/delete', 'StructureController@deleteDepartment');
+
+
+$router->get('admin/structure/history', 'StructureController@history');
+$router->get('admin/structure/ajax_get_structures', 'StructureController@ajax_get_structures');
+$router->post('admin/structure/secretariat/store', 'StructureController@storeSecretariat');
+
+/*
+|--------------------------------------------------------------------------
 | Processamento da requisição
 |--------------------------------------------------------------------------
 */

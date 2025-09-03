@@ -353,3 +353,9 @@
         .search-results div:hover { background-color: #f8f9fa; }
         .search-item-details { font-size: 0.8em; color: #6c757d; }
 
+        .deleted-tag {
+            font-style: italic;
+            color: #b91c1c; /* Cor vermelha para indicar exclusão */
+            font-size: 0.9em;
+            margin-left: 5px;
+        }
