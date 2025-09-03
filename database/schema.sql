@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Sep 02, 2025 at 10:23 PM
+-- Generation Time: Sep 03, 2025 at 08:51 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -347,6 +347,29 @@ CREATE TABLE `vehicles` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `vehicle_transfers`
+--
+
+CREATE TABLE `vehicle_transfers` (
+  `id` int(11) NOT NULL,
+  `vehicle_id` int(11) NOT NULL,
+  `requester_id` int(11) NOT NULL,
+  `origin_secretariat_id` int(11) NOT NULL,
+  `destination_secretariat_id` int(11) NOT NULL,
+  `transfer_type` enum('permanent','temporary') NOT NULL,
+  `start_date` datetime DEFAULT NULL,
+  `end_date` datetime DEFAULT NULL,
+  `status` enum('pending','approved','rejected','returned') NOT NULL DEFAULT 'pending',
+  `approver_id` int(11) DEFAULT NULL,
+  `request_notes` text DEFAULT NULL,
+  `approval_notes` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 --
 -- Indexes for dumped tables
 --
@@ -518,6 +541,17 @@ ALTER TABLE `vehicles`
   ADD KEY `current_secretariat_id` (`current_secretariat_id`);
 
 --
+-- Indexes for table `vehicle_transfers`
+--
+ALTER TABLE `vehicle_transfers`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `vehicle_id` (`vehicle_id`),
+  ADD KEY `requester_id` (`requester_id`),
+  ADD KEY `origin_secretariat_id` (`origin_secretariat_id`),
+  ADD KEY `destination_secretariat_id` (`destination_secretariat_id`),
+  ADD KEY `approver_id` (`approver_id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -648,6 +682,12 @@ ALTER TABLE `vehicles`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `vehicle_transfers`
+--
+ALTER TABLE `vehicle_transfers`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- Constraints for dumped tables
 --
 
@@ -762,6 +802,16 @@ ALTER TABLE `users`
 --
 ALTER TABLE `vehicles`
   ADD CONSTRAINT `vehicles_ibfk_1` FOREIGN KEY (`current_secretariat_id`) REFERENCES `secretariats` (`id`);
+
+--
+-- Constraints for table `vehicle_transfers`
+--
+ALTER TABLE `vehicle_transfers`
+  ADD CONSTRAINT `vehicle_transfers_ibfk_1` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `vehicle_transfers_ibfk_2` FOREIGN KEY (`requester_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `vehicle_transfers_ibfk_3` FOREIGN KEY (`origin_secretariat_id`) REFERENCES `secretariats` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `vehicle_transfers_ibfk_4` FOREIGN KEY (`destination_secretariat_id`) REFERENCES `secretariats` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `vehicle_transfers_ibfk_5` FOREIGN KEY (`approver_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -14,12 +14,7 @@
     padding: 0;
 }
 
-body {
-    font-family: Arial, sans-serif;
-    background-color: var(--diario-background);
-    margin: 0;
-    padding: 0;
-}
+
 
 /* Container principal que centraliza o conteúdo em telas maiores */
 .diario-container {

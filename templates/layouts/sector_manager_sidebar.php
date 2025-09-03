@@ -59,8 +59,12 @@ $current_uri = $_SERVER['REQUEST_URI'];
                     <a href="<?php echo BASE_URL; ?>/admin/structure"><i class="fas fa-sitemap"></i> Estruturas</a>
                 </li>
             <?php endif; ?>
-            <?php
 
+            <li class="<?php echo (strpos($current_uri, 'transfers') !== false) ? 'active' : ''; ?>">
+                <a href="<?php echo BASE_URL; ?>/transfers"><i class="fas fa-exchange-alt"></i> Transferências</a>
+            </li>
+
+            <?php
             $isDiarioActive = (strpos($current_uri, 'runs') !== false && strpos($current_uri, 'runs/history') === false);
             ?>
             <li class="<?php echo $isDiarioActive ? 'active' : ''; ?>">

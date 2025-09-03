@@ -180,6 +180,26 @@ $router->get('admin/structure/history', 'StructureController@history');
 $router->get('admin/structure/ajax_get_structures', 'StructureController@ajax_get_structures');
 $router->post('admin/structure/secretariat/store', 'StructureController@storeSecretariat');
 
+
+/*
+|--------------------------------------------------------------------------
+| Rotas de Transferência de Veículos
+|--------------------------------------------------------------------------
+*/
+$router->get('transfers', 'VehicleTransferController@index');
+$router->get('transfers/ajax/search-vehicles', 'VehicleTransferController@ajax_search_vehicles'); // Rota para o autocomplete
+$router->post('transfers/store', 'VehicleTransferController@store');
+
+//ROTAS PARA APROVAR E REJEITAR
+$router->post('transfers/approve', 'VehicleTransferController@approve');
+$router->post('transfers/reject', 'VehicleTransferController@reject');
+
+$router->get('transfers/history', 'VehicleTransferController@history'); // Rota para o histórico
+$router->post('transfers/return', 'VehicleTransferController@returnVehicle'); // Rota para devolver o veículo
+$router->get('transfers/ajax/get-ongoing', 'VehicleTransferController@ajax_get_ongoing_transfers'); // Rota para buscar empréstimos ativos
+$router->get('transfers/ajax/get-pending', 'VehicleTransferController@ajax_get_pending_transfers'); // Rota para buscar pendentes
+
+
 /*
 |--------------------------------------------------------------------------
 | Processamento da requisição

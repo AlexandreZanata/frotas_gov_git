@@ -37,6 +37,10 @@
                     <a href="<?php echo BASE_URL; ?>/admin/structure"><i class="fas fa-sitemap"></i> Estruturas</a>
                 </li>
             <?php endif; ?>
+
+            <li class="<?php echo (strpos($current_uri, 'transfers') !== false) ? 'active' : ''; ?>">
+                <a href="<?php echo BASE_URL; ?>/transfers"><i class="fas fa-exchange-alt"></i> Transferências</a>
+            </li>
             <li><a href="<?php echo BASE_URL; ?>/runs/new"><i class="fas fa-book"></i> Diário de Bordo</a></li>
 
 
