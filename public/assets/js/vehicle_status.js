@@ -52,33 +52,39 @@ document.addEventListener('DOMContentLoaded', () => {
         availableCounter.innerHTML = `<i class="fas fa-check-circle icon-available"></i> Veículos Disponíveis (${data.availableVehicles.length})`;
     };
 
-    // --- LÓGICA DE BUSCA (CORRIGIDA) ---
-    searchInput.addEventListener('input', () => {
-        clearTimeout(searchDebounce);
-        searchDebounce = setTimeout(async () => {
-            const term = searchInput.value;
-            try {
-                // USA A NOVA ROTA CORRETA
-                const response = await fetch(`${BASE_URL}/sector-manager/ajax/search-vehicles-status?term=${encodeURIComponent(term)}`, {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
-                });
-                if (!response.ok) { // Verifica se a resposta HTTP foi bem-sucedida
-                    throw new Error(`Erro de rede: ${response.statusText}`);
+searchInput.addEventListener('input', () => {
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(async () => {
+        const term = searchInput.value;
+        try {
+            // URL corrigida para corresponder à rota definida no PHP
+            const response = await fetch(`${BASE_URL}/sector-manager/vehicles/ajax-search-status?term=${encodeURIComponent(term)}`, {
+                headers: { 
+                    'X-Requested-With': 'XMLHttpRequest', 
+                    'Accept': 'application/json'
                 }
-                const result = await response.json();
-                if (result.success) {
-                    renderGrids(result.data);
-                } else {
-                     throw new Error(result.message || "Falha ao obter dados.");
-                }
-            } catch (error) {
-                console.error("Erro ao buscar veículos:", error);
-                inUseGrid.innerHTML = `<p class="no-vehicles-message" style="color:red;">${error.message}</p>`;
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.log("Resposta do servidor:", JSON.stringify(errorData));
+                throw new Error(`Erro de rede: ${response.status} ${response.statusText}`);
             }
-        }, 300);
-    });
+            
+            const result = await response.json();
+            if (result.success) {
+                renderGrids(result.data);
+            } else {
+                throw new Error(result.message || "Falha ao obter dados.");
+            }
+        } catch (error) {
+            console.error("Erro detalhado:", error);
+            inUseGrid.innerHTML = `<p class="no-vehicles-message" style="color:red;">${error.message}</p>`;
+        }
+    }, 300);
+});
 
-    // --- LÓGICA DE INTERAÇÃO DOS CARDS ---
+    // --- LÓGICA DE INTERAÇÃO DOS CARDS (mantida igual) ---
     document.querySelector('.content-body').addEventListener('click', async (e) => {
         const target = e.target;
         

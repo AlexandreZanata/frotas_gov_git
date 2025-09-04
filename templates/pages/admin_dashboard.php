@@ -60,18 +60,20 @@
         </nav>
     </aside>
 
-    <main class="main-content">
-        <header class="mobile-header">
-            <h2>Painel do Gestor</h2>
-            <button id="menu-toggle"><i class="fas fa-bars"></i></button>
-        </header>
+<main class="main-content">
+    <header class="mobile-header">
+        <h2>Painel do Gestor</h2>
+        <button id="menu-toggle"><i class="fas fa-bars"></i></button>
+    </header>
 
-        <header class="header">
-            <h1>Painel de Controle do Gestor</h1>
-            <div class="user-info">
-                <span>Olá, <?php echo htmlspecialchars($_SESSION['user_name']); ?>!</span>
-            </div>
-        </header>
+    <header class="header">
+        <button id="desktop-menu-toggle" class="menu-toggle-btn"><i class="fas fa-bars"></i></button>
+        
+        <h1>Painel de Controle do Gestor</h1>
+        <div class="user-info">
+            <span>Olá, <?php echo htmlspecialchars($_SESSION['user_name']); ?>!</span>
+        </div>
+    </header>
 
         <section class="kpi-grid">
             <div class="kpi-card">

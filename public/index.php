@@ -227,9 +227,7 @@ $router->get('sector-manager/vehicles/status', 'VehicleStatusController@index');
 // Rota para a ação de forçar o encerramento de uma corrida
 $router->post('sector-manager/vehicles/force-end-run', 'VehicleStatusController@forceEndRun');
 
-// <-- ADICIONE ESTA LINHA PARA CORRIGIR A BUSCA AJAX -->
-$router->get('sector-manager/ajax/search-vehicles-status', 'VehicleStatusController@index');
-
+$router->get('sector-manager/vehicles/ajax-search-status', 'VehicleStatusController@ajax_search_status');
 $router->get('sector-manager/vehicles/status/history', 'VehicleStatusController@history');
 
 

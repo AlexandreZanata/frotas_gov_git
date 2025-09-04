@@ -48,10 +48,12 @@ class VehicleStatusController
     {
         header('Content-Type: application/json');
         try {
-            $searchTerm = trim(filter_input(INPUT_GET, 'term', FILTER_SANITIZE_STRING) ?? '');
+            $searchTerm = isset($_GET['term']) ? trim(filter_input(INPUT_GET, 'term', FILTER_SANITIZE_STRING)) : '';
             $result = $this->fetch_vehicle_status_data($searchTerm);
             echo json_encode(['success' => true, 'data' => $result]);
         } catch (Exception $e) {
+            // Loga para diagnóstico
+            error_log('ajax_search_status error: ' . $e->getMessage());
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => 'Ocorreu um erro ao processar a busca: ' . $e->getMessage()]);
         }
@@ -59,24 +61,37 @@ class VehicleStatusController
 
     /**
      * Lógica central para buscar e processar os dados de status dos veículos.
-     * @param string $searchTerm O termo para filtrar a busca.
-     * @return array Um array contendo 'inUseVehicles' e 'availableVehicles'.
+     * Evita reutilizar o mesmo placeholder (MySQL nativo não permite), usando 3 placeholders distintos.
+     * @param string $searchTerm
+     * @return array
      */
     private function fetch_vehicle_status_data($searchTerm)
     {
-        // SQL REFORMULADA: Sem cláusula WITH para máxima compatibilidade.
         $sql = "
             SELECT
-                v.id as vehicle_id, v.name as vehicle_name, v.prefix as vehicle_prefix, v.plate as vehicle_plate, v.status as vehicle_status,
-                lr.id as run_id, lr.destination, lr.start_time, lr.end_time, lr.stop_point, lr.start_km,
-                (SELECT MAX(r_inner.end_km) FROM runs r_inner WHERE r_inner.vehicle_id = v.id AND r_inner.end_km > 0) as last_valid_km,
+                v.id as vehicle_id,
+                v.name as vehicle_name,
+                v.prefix as vehicle_prefix,
+                v.plate as vehicle_plate,
+                v.status as vehicle_status,
+                lr.id as run_id,
+                lr.destination,
+                lr.start_time,
+                lr.end_time,
+                lr.stop_point,
+                lr.start_km,
+                (SELECT MAX(r_inner.end_km)
+                   FROM runs r_inner
+                  WHERE r_inner.vehicle_id = v.id
+                    AND r_inner.end_km > 0
+                ) as last_valid_km,
                 u.name as driver_name
             FROM vehicles v
             LEFT JOIN runs lr ON lr.id = (
                 SELECT id FROM runs r_sub
-                WHERE r_sub.vehicle_id = v.id
-                ORDER BY r_sub.start_time DESC
-                LIMIT 1
+                 WHERE r_sub.vehicle_id = v.id
+                 ORDER BY r_sub.start_time DESC
+                 LIMIT 1
             )
             LEFT JOIN users u ON lr.driver_id = u.id
         ";
@@ -84,23 +99,36 @@ class VehicleStatusController
         $params = [];
         $whereClauses = [];
 
-        if ($_SESSION['user_role_id'] == 2) {
+        // Escopo por secretaria para gestor setorial
+        if (isset($_SESSION['user_role_id']) && $_SESSION['user_role_id'] == 2) {
             $whereClauses[] = "v.current_secretariat_id = :secretariat_id";
             $params[':secretariat_id'] = $_SESSION['user_secretariat_id'];
         }
-        
+
+        // Busca por prefixo/placa/motorista
         if (!empty($searchTerm)) {
-            $whereClauses[] = "(v.prefix LIKE :term OR v.plate LIKE :term OR u.name LIKE :term)";
-            $params[':term'] = "%{$searchTerm}%";
+            $whereClauses[] = "(v.prefix LIKE :term_prefix OR v.plate LIKE :term_plate OR u.name LIKE :term_driver)";
+            $like = "%{$searchTerm}%";
+            $params[':term_prefix'] = $like;
+            $params[':term_plate']  = $like;
+            $params[':term_driver'] = $like;
         }
-        
+
         if (!empty($whereClauses)) {
             $sql .= " WHERE " . implode(' AND ', $whereClauses);
         }
 
-        $stmt = $this->conn->prepare($sql);
-        $stmt->execute($params);
-        $allVehicles = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        try {
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute($params);
+            $allVehicles = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            // Log detalhado para depuração
+            error_log('SQL Error fetch_vehicle_status_data: ' . $e->getMessage());
+            error_log('SQL: ' . $sql);
+            error_log('Params: ' . print_r($params, true));
+            throw $e;
+        }
 
         $inUseVehicles = [];
         $availableVehicles = [];
@@ -112,12 +140,22 @@ class VehicleStatusController
                 $availableVehicles[] = $vehicle;
             }
         }
-        
-        usort($inUseVehicles, fn($a, $b) => strcmp($b['start_time'] ?? '0', $a['start_time'] ?? '0'));
-        usort($availableVehicles, fn($a, $b) => strcmp($b['end_time'] ?? '0', $a['end_time'] ?? '0'));
-        
+
+        // Ordenações (funções anônimas para compatibilidade)
+        usort($inUseVehicles, function ($a, $b) {
+            $aTime = isset($a['start_time']) ? $a['start_time'] : '0';
+            $bTime = isset($b['start_time']) ? $b['start_time'] : '0';
+            return strcmp($bTime, $aTime);
+        });
+
+        usort($availableVehicles, function ($a, $b) {
+            $aTime = isset($a['end_time']) ? $a['end_time'] : '0';
+            $bTime = isset($b['end_time']) ? $b['end_time'] : '0';
+            return strcmp($bTime, $aTime);
+        });
+
         return [
-            'inUseVehicles' => $inUseVehicles,
+            'inUseVehicles'     => $inUseVehicles,
             'availableVehicles' => $availableVehicles,
         ];
     }
@@ -178,7 +216,7 @@ class VehicleStatusController
             $updatedVehicleData['stop_point'] = $stopPointMessage;
             $updatedVehicleData['end_time'] = date('Y-m-d H:i:s');
             
-            // Lógica para pegar o último KM válido para o card
+            // Último KM válido
             $last_km_stmt = $this->conn->prepare("SELECT MAX(end_km) as last_km FROM runs WHERE vehicle_id = ? AND end_km > 0");
             $last_km_stmt->execute([$run['vehicle_id']]);
             $last_km_result = $last_km_stmt->fetchColumn();
@@ -189,7 +227,7 @@ class VehicleStatusController
 
         } catch (Exception $e) {
             $this->conn->rollBack();
-            http_response_code(400); // Bad Request
+            http_response_code(400);
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
     }

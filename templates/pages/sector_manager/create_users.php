@@ -15,12 +15,12 @@
     <?php include_once __DIR__ . '/../../layouts/sector_manager_sidebar.php'; ?>
 
     <main class="main-content">
-        <header class="header">
-            <h1>Cadastro e Controle de Usuários</h1>
-            <div class="user-info">
-                <span>Olá, <?php echo htmlspecialchars($_SESSION['user_name']); ?></span>
-            </div>
-        </header>
+<header class="header">
+    <button id="desktop-menu-toggle" class="menu-toggle-btn"><i class="fas fa-bars"></i></button>
+    <h1>Cadastro e Controle de Usuários</h1> <div class="user-info">
+        <span>Olá, <?php echo htmlspecialchars($_SESSION['user_name']); ?>!</span>
+    </div>
+</header>
 
         <div class="content-body">
             <div class="form-container">

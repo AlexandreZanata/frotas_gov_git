@@ -1,14 +1,10 @@
 :root {
     --primary-color: #0c4a6e; /* Azul escuro */
-    --secondary-color: #f0f9ff; /* Azul bem claro (quase branco) */
     --accent-color: #38bdf8; /* Azul claro para detalhes */
     --text-color: #334155;
     --bg-color: #f8fafc;
     --card-bg: #ffffff;
     --sidebar-bg: #ffffff;
-    --sidebar-width: 260px;
-    --header-height: 70px;
-    --border-radius: 12px;
     --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
@@ -32,7 +28,17 @@ body {
     flex-direction: column;
     padding-top: 20px;
     z-index: 1000;
-    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition: transform 0.3s ease-in-out;
+
+        /* Organização interna com Flexbox */
+    display: flex; 
+    flex-direction: column;
+
+    /* Espaçamento interno (topo e base) */
+    padding-top: 20px;
+    padding-bottom: 40px; /* << ADICIONE ESTA LINHA para criar o espaço no final */
+    box-sizing: border-box; /* << ADICIONE ESTA LINHA para garantir que o padding não estoure a altura */
+
 }
 
 .sidebar-header {
@@ -46,10 +52,27 @@ body {
     margin: 0;
 }
 
+.sidebar-nav {
+    flex-grow: 1;
+    overflow-y: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
+}
+
+.sidebar-nav::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, and Opera */
+}
+
 .sidebar-nav ul {
     list-style: none;
     padding: 0;
     margin: 0;
+}
+
+.sidebar-nav li.active > a,
+.sidebar-nav a:hover {
+    background-color: var(--primary-color);
+    color: #fff;
 }
 
 .sidebar-nav a {
@@ -62,151 +85,63 @@ body {
     transition: background-color 0.3s, color 0.3s;
 }
 
-.sidebar-nav a:hover,
-.sidebar-nav a.active {
-    background-color: var(--primary-color);
-    color: #fff;
-}
-
-.sidebar-nav li.active > a,
-.sidebar-nav a:hover {
-    background-color: var(--primary-color);
-    color: #fff;
-}
-
 .main-content {
     margin-left: 250px;
     width: calc(100% - 250px);
     padding: 20px;
+    transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out;
 }
 
-/* --- HEADER PADRÃO --- */
+/* --- LÓGICA DE RECOLHIMENTO (DESKTOP) --- */
+body.sidebar-collapsed .sidebar {
+    transform: translateX(-100%);
+}
+
+body.sidebar-collapsed .main-content {
+    margin-left: 0;
+    width: 100%;
+}
+
+/* --- HEADER E BOTÃO DE TOGGLE --- */
 .header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    align-items: center; /* Alinha o botão com o título */
     margin-bottom: 20px;
 }
 
-.header h1 { margin: 0; }
-.user-info a { color: var(--secondary-color); text-decoration: none; transition: color 0.3s; }
-.user-info a:hover { color: var(--primary-color); }
-
-/* --- CARDS DASHBOARD PADRÃO --- */
-.desktop-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-}
-
-.desktop-card {
-    background-color: var(--card-bg);
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: var(--shadow);
-}
-
-/* --- [NOVO] ESTILOS PARA O DASHBOARD DO ADMINISTRADOR --- */
-
-/* Seção de KPIs (Cards de Métricas) */
-.kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1.5rem;
-}
-
-.kpi-card {
-    background-color: var(--card-bg);
-    padding: 1.5rem;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-    text-align: center;
-}
-
-.kpi-card h3 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1rem;
-    font-weight: 500;
-    color: var(--text-secondary-color); /* CORRIGIDO: Cor do título do card */
-}
-
-.kpi-card .kpi-value {
+.header h1 {
     margin: 0;
-    font-size: 2rem; /* OTIMIZADO: Tamanho da fonte ligeiramente reduzido */
-    font-weight: 700;
+    flex-grow: 1; /* Faz o título ocupar o espaço restante */
+}
+
+.user-info {
+    text-align: right;
+}
+
+.menu-toggle-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
     color: var(--primary-color);
-    white-space: nowrap; /* OTIMIZADO: Impede a quebra de linha do valor */
-    overflow: hidden;
-    text-overflow: ellipsis;
+    cursor: pointer;
+    margin-right: 1.5rem; /* Aumenta o espaçamento */
+    padding: 5px;
+    display: block; /* Visível por padrão */
 }
 
-
-/* Seção de Gráficos Modernizada */
-.charts-section {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 2rem;
-    margin-top: 2rem;
-}
-
-.chart-container {
-    background-color: var(--card-bg);
-    padding: 1.5rem;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-    /* CORREÇÃO: Definir uma altura e posição é crucial para o Chart.js */
-    position: relative;
-    height: 450px; 
-}
-
-.chart-container h3 {
-    margin-top: 0;
-    margin-bottom: 1.5rem;
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--primary-color);
-    text-align: center;
-}
-
-/* Contêiner rolável para o gráfico com muitos veículos */
-.scrollable-chart {
-    /* CORREÇÃO: A div de rolagem agora tem altura e posição definidas */
-    position: relative;
-    height: 100%;
-    max-height: 350px; /* Altura do conteúdo antes de rolar */
-    overflow-y: auto;
-}
-
-/* Estilizando a barra de rolagem (opcional, para um visual melhor) */
-.scrollable-chart::-webkit-scrollbar {
-    width: 8px;
-}
-
-.scrollable-chart::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-}
-
-.scrollable-chart::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 10px;
-}
-
-.scrollable-chart::-webkit-scrollbar-thumb:hover {
-    background: #aaa;
-}
-/* --- FIM DOS ESTILOS DE ADMIN --- */
-
+/* --- KPIs E GRÁFICOS (Sem alterações) --- */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; }
+.kpi-card { background-color: var(--card-bg); padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow); text-align: center; }
+.kpi-card h3 { margin: 0 0 0.5rem 0; font-size: 1rem; font-weight: 500; color: #64748b; }
+.kpi-card .kpi-value { margin: 0; font-size: 2rem; font-weight: 700; color: var(--primary-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.charts-section { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; }
+.chart-container { background-color: var(--card-bg); padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow); position: relative; height: 450px; }
+.chart-container h3 { margin-top: 0; margin-bottom: 1.5rem; font-size: 1.25rem; font-weight: 600; color: var(--primary-color); text-align: center; }
+.scrollable-chart { position: relative; height: 100%; max-height: 350px; overflow-y: auto; }
 
 /* --- VERSÃO MOBILE --- */
-.mobile-header, .mobile-buttons, .overlay {
+.mobile-header, .overlay {
     display: none;
-}
-
-@media (max-width: 992px) {
-    .charts-section {
-        grid-template-columns: 1fr; /* Gráficos ficam um sobre o outro em telas médias */
-    }
 }
 
 @media (max-width: 768px) {
@@ -215,39 +150,22 @@ body {
     .sidebar {
         left: auto;
         right: 0;
-        width: 65%;
-        transform: translateX(100%);
+        width: 70%; /* Largura ajustada */
+        transform: translateX(100%); /* Posição inicial fora da tela */
     }
 
-    .sidebar.open {
+    /* Regra para exibir a sidebar no mobile quando o corpo NÃO está recolhido */
+    body:not(.sidebar-collapsed) .sidebar {
         transform: translateX(0);
     }
     
-    .overlay {
-        display: block;
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background-color: rgba(0,0,0,0.5);
-        z-index: 998;
-        opacity: 0;
-        visibility: hidden;
-        transition: opacity 0.4s ease, visibility 0s 0.4s;
-    }
-
-    .overlay.show {
-        opacity: 1;
-        visibility: visible;
-        transition: opacity 0.4s ease;
-    }
-
     .main-content {
         margin-left: 0;
         width: 100%;
         padding: 0;
     }
 
-    .header, .desktop-cards { display: none; }
+    .header { display: none; } /* Esconde header do desktop */
 
     .mobile-header {
         display: flex;
@@ -260,21 +178,26 @@ body {
     }
     .mobile-header h2 { color: var(--primary-color); margin: 0; }
     #menu-toggle { background: none; border: none; font-size: 24px; cursor: pointer; z-index: 1001; }
-    
-    .mobile-buttons { display: flex; flex-direction: column; }
-    .mobile-button { background-color: #fff; border: none; border-bottom: 1px solid #f0f2f5; padding: 20px 15px; text-align: left; width: 100%; cursor: pointer; }
-    .mobile-button h3 { margin: 0 0 5px 0; font-size: 1.1em; color: var(--primary-color); }
-    .mobile-button p { margin: 0; color: var(--secondary-color); }
-}
 
-.kpi-card-link {
-    text-decoration: none;
-    color: inherit;
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    display: block; /* Garante que a área do link ocupe todo o card */
-}
+    /* Esconde o botão de toggle do desktop no mobile */
+    .menu-toggle-btn {
+        display: none;
+    }
 
-.kpi-card-link:hover .kpi-card {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    .overlay {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        z-index: 998;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease;
+    }
+
+    .overlay.active {
+        display: block;
+        opacity: 1;
+        visibility: visible;
+    }
 }
