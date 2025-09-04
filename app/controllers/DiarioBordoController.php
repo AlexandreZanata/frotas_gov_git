@@ -166,6 +166,16 @@ class DiarioBordoController
         $vehicle_id = $_SESSION['run_vehicle_id'];
         $items = $_POST['items'];
 
+            // VERIFICA SE HÁ ALGUM PROBLEMA
+        $hasProblem = false;
+        foreach ($items as $data) {
+            if (isset($data['status']) && $data['status'] === 'problem') {
+                $hasProblem = true;
+                break;
+            }
+        }
+
+
         $this->conn->beginTransaction();
         try {
             $run_stmt = $this->conn->prepare(
@@ -214,10 +224,14 @@ class DiarioBordoController
             }
 
             if ($hasProblem) {
+                $notification_stmt = $this->conn->prepare("INSERT INTO notifications (checklist_id, secretariat_id) VALUES (?, ?)");
+                $notification_stmt->execute([$checklist_id, $this->user['secretariat_id']]);
+                
+                // Opcional: Atualizar status do veículo para 'maintenance'
                 $vehicle_status_stmt = $this->conn->prepare("UPDATE vehicles SET status = 'maintenance' WHERE id = :id");
                 $vehicle_status_stmt->execute(['id' => $vehicle_id]);
             }
-
+            
             $this->conn->commit();
             header('Location: ' . BASE_URL . '/runs/start');
             exit();
@@ -228,7 +242,7 @@ class DiarioBordoController
         }
     }
     
-    // O restante dos métodos (start, storeStart, finish, etc.) permanece o mesmo...
+ 
 
     public function start()
     {

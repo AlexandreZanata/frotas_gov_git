@@ -10,12 +10,17 @@ $current_uri = $_SERVER['REQUEST_URI'];
         <ul>
             
             <!-- A classe 'active' é adicionada se a URI contém 'dashboard' -->
-            <li class="<?php echo (strpos($current_uri, 'dashboard') !== false) ? 'active' : ''; ?>">
+            <li class="<?php echo (strpos($current_uri, 'dashboard') !== false || strpos($current_uri, 'vehicles/status') !== false) ? 'active' : ''; ?>">
                 <a href="<?php echo BASE_URL; ?>/dashboard"><i class="fas fa-tachometer-alt"></i> Painel</a>
             </li>
-
             <li class="<?php echo (strpos($current_uri, 'profile') !== false) ? 'active' : ''; ?>">
                 <a href="<?php echo BASE_URL; ?>/profile"><i class="fas fa-user-circle"></i> Meu Perfil</a>
+            </li>
+
+            <li class="<?php echo (strpos($current_uri, 'notifications') !== false) ? 'active' : ''; ?>">
+                <a href="<?php echo BASE_URL; ?>/sector-manager/notifications">
+                    <i class="fas fa-bell"></i> Notificações
+                    </a>
             </li>
             
             <?php if ($_SESSION['user_role_id'] == 4): ?>
@@ -26,8 +31,7 @@ $current_uri = $_SERVER['REQUEST_URI'];
 
 
             <?php if (isset($_SESSION['user_role_id']) && in_array($_SESSION['user_role_id'], [1, 2])):?>
-            <!-- CORREÇÃO: A classe 'active' é adicionada se a URI contém 'vehicles' -->
-            <li class="<?php echo (strpos($current_uri, 'vehicles') !== false) ? 'active' : ''; ?>">
+            <li class="<?php echo (strpos($current_uri, 'sector-manager/vehicles') !== false && strpos($current_uri, 'status') === false) ? 'active' : ''; ?>">
                 <a href="<?php echo BASE_URL; ?>/sector-manager/vehicles"><i class="fas fa-car"></i> Veículos</a>
             </li>
             <?php endif; ?>

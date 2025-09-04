@@ -142,6 +142,12 @@ $router->get('sector-manager/reports/generate', 'ReportController@generatePdfRep
 $router->post('sector-manager/ajax/get-user', 'SectorManagerController@ajax_get_user');
 $router->get('sector-manager/ajax/search-users', 'SectorManagerController@ajax_search_users');
 
+// Notificações
+$router->get('sector-manager/notifications', 'NotificationController@index');
+$router->post('sector-manager/notifications/process', 'NotificationController@process');
+//VER DETALHE DAS NOTIFICAÇÕES DO CECKLIST
+$router->get('admin/notification/detail', 'NotificationController@show'); 
+
 
 /*
 |--------------------------------------------------------------------------
@@ -207,6 +213,24 @@ $router->get('transfers/ajax/get-pending', 'VehicleTransferController@ajax_get_p
 $router->get('profile', 'ProfileController@index');
 $router->post('profile/update', 'ProfileController@update');
 $router->post('profile/change-password', 'ProfileController@changePassword');
+
+
+/*
+|--------------------------------------------------------------------------
+| Rotas VEICULO EM USO
+|--------------------------------------------------------------------------
+*/
+
+// Rota para a nova página de status de veículos
+$router->get('sector-manager/vehicles/status', 'VehicleStatusController@index');
+
+// Rota para a ação de forçar o encerramento de uma corrida
+$router->post('sector-manager/vehicles/force-end-run', 'VehicleStatusController@forceEndRun');
+
+// <-- ADICIONE ESTA LINHA PARA CORRIGIR A BUSCA AJAX -->
+$router->get('sector-manager/ajax/search-vehicles-status', 'VehicleStatusController@index');
+
+$router->get('sector-manager/vehicles/status/history', 'VehicleStatusController@history');
 
 
 /*

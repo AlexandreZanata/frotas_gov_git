@@ -267,4 +267,14 @@ body {
     .mobile-button p { margin: 0; color: var(--secondary-color); }
 }
 
+.kpi-card-link {
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    display: block; /* Garante que a área do link ocupe todo o card */
+}
 
+.kpi-card-link:hover .kpi-card {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+}

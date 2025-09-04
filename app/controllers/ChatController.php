@@ -902,6 +902,63 @@ public function api_schedule_message()
     }
 }
 
+/**
+ * Envia uma mensagem de sistema de um remetente para um destinatário.
+ * Cria uma nova conversa 1-para-1 se não existir.
+ * @param int $senderId ID do remetente (pode ser o gestor ou um ID de sistema)
+ * @param int $recipientId ID do destinatário
+ * @param string $message O conteúdo da mensagem
+ * @return void
+ */
+public function sendSystemMessage(int $senderId, int $recipientId, string $message)
+{
+    if ($senderId == $recipientId) return; // Não envia para si mesmo
+
+    try {
+        $this->conn->beginTransaction();
+
+        // 1. Encontra ou cria a sala de chat 1-para-1
+        $stmt_find = $this->conn->prepare("
+            SELECT cp1.room_id FROM chat_participants cp1
+            JOIN chat_participants cp2 ON cp1.room_id = cp2.room_id
+            JOIN chat_rooms cr ON cp1.room_id = cr.id
+            WHERE cr.is_group = 0 AND cp1.user_id = ? AND cp2.user_id = ?
+        ");
+        $stmt_find->execute([$senderId, $recipientId]);
+        $existingRoom = $stmt_find->fetch(PDO::FETCH_ASSOC);
+
+        if ($existingRoom) {
+            $roomId = $existingRoom['room_id'];
+        } else {
+            $stmt_room = $this->conn->prepare("INSERT INTO chat_rooms (creator_id, is_group) VALUES (?, 0)");
+            $stmt_room->execute([$senderId]);
+            $roomId = $this->conn->lastInsertId();
+
+            $partStmt = $this->conn->prepare("INSERT INTO chat_participants (room_id, user_id) VALUES (?, ?)");
+            $partStmt->execute([$roomId, $senderId]);
+            $partStmt->execute([$roomId, $recipientId]);
+        }
+
+        // 2. Insere a mensagem
+        $msgStmt = $this->conn->prepare("INSERT INTO chat_messages (room_id, sender_id, message, message_type) VALUES (?, ?, ?, 'notification')");
+        $msgStmt->execute([$roomId, $senderId, $message]);
+        $messageId = $this->conn->lastInsertId();
+
+        // 3. Define o status de leitura
+        $recStmt = $this->conn->prepare("INSERT INTO chat_message_recipients (message_id, recipient_id, is_read) VALUES (?, ?, ?)");
+        $recStmt->execute([$messageId, $senderId, 1]); // Remetente já leu
+        $recStmt->execute([$messageId, $recipientId, 0]); // Destinatário não leu
+
+        $this->conn->commit();
+    } catch (Exception $e) {
+        if ($this->conn->inTransaction()) {
+            $this->conn->rollBack();
+        }
+        // Logar o erro em um ambiente de produção
+        error_log("Erro ao enviar mensagem de sistema: " . $e->getMessage());
+    }
+}
+
     // Para compatibilidade com chamadas anteriores
     public function ajax_get_conversations()
     {

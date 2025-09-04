@@ -21,6 +21,13 @@
                 <li class="<?php echo (strpos($current_uri, 'profile') !== false) ? 'active' : ''; ?>">
                     <a href="<?php echo BASE_URL; ?>/profile"><i class="fas fa-user-circle"></i> Meu Perfil</a>
                 </li>
+
+            <li class="<?php echo (strpos($current_uri, 'notifications') !== false) ? 'active' : ''; ?>">
+                <a href="<?php echo BASE_URL; ?>/sector-manager/notifications">
+                    <i class="fas fa-bell"></i> Notificações
+                    </a>
+            </li>
+                    
                 <li><a href="<?php echo BASE_URL; ?>/sector-manager/vehicles"><i class="fas fa-car"></i> Veículos</a></li>
                 <li class="<?php echo ($current_page == 'records') ? 'active' : ''; ?>">
                     <a href="<?php echo BASE_URL; ?>/sector-manager/records"><i class="fas fa-list-alt"></i> Gerenciar Registros</a>
@@ -71,10 +78,12 @@
                 <h3>Total de Corridas</h3>
                 <p class="kpi-value"><?php echo $totalRuns; ?></p>
             </div>
-            <div class="kpi-card">
-                <h3>Veículos em Uso</h3>
-                <p class="kpi-value"><?php echo $totalVehiclesInUse; ?></p>
-            </div>
+            <a href="<?php echo BASE_URL; ?>/sector-manager/vehicles/status" class="kpi-card-link">
+                <div class="kpi-card">
+                    <h3>Veículos em Uso</h3>
+                    <p class="kpi-value"><?php echo $totalVehiclesInUse; ?></p>
+                </div>
+            </a>
             <div class="kpi-card">
                 <h3>Gasto com Combustível</h3>
                 <p class="kpi-value">R$ <?php echo $totalFuelCost; ?></p>
