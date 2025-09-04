@@ -230,7 +230,9 @@ $router->post('sector-manager/vehicles/force-end-run', 'VehicleStatusController@
 $router->get('sector-manager/vehicles/ajax-search-status', 'VehicleStatusController@ajax_search_status');
 $router->get('sector-manager/vehicles/status/history', 'VehicleStatusController@history');
 
-
+// ROTA PARA ANÁLISE DE COMBUSTÍVEL
+$router->get('sector-manager/reports/fuel-analysis', 'FuelReportController@index');
+$router->get('profile', 'ProfileController@index');
 /*
 |--------------------------------------------------------------------------
 | Processamento da requisição

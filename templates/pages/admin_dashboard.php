@@ -86,10 +86,12 @@
                     <p class="kpi-value"><?php echo $totalVehiclesInUse; ?></p>
                 </div>
             </a>
+            <a href="<?php echo BASE_URL; ?>/sector-manager/reports/fuel-analysis" class="kpi-card-link">
             <div class="kpi-card">
                 <h3>Gasto com Combustível</h3>
                 <p class="kpi-value">R$ <?php echo $totalFuelCost; ?></p>
             </div>
+            </a>
             <div class="kpi-card">
                 <h3>Quilometragem Total</h3>
                 <p class="kpi-value"><?php echo $totalKm; ?> Km</p>

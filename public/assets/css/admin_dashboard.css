@@ -1,6 +1,6 @@
 :root {
-    --primary-color: #0c4a6e; /* Azul escuro */
-    --accent-color: #38bdf8; /* Azul claro para detalhes */
+    --primary-color: #0c4a6e;
+    --accent-color: #38bdf8;
     --text-color: #334155;
     --bg-color: #f8fafc;
     --card-bg: #ffffff;
@@ -14,37 +14,32 @@ body {
     color: var(--text-color);
     margin: 0;
     display: flex;
+    overflow: hidden;
 }
 
-/* --- ESTRUTURA PRINCIPAL (SIDEBAR E CONTEÚDO) --- */
+/* --- ESTRUTURA PRINCIPAL --- */
 .sidebar {
     width: 250px;
     background-color: var(--sidebar-bg);
     height: 100vh;
     position: fixed;
+    top: 0; /* Adicionado para garantir o alinhamento no topo */
     left: 0;
     box-shadow: var(--shadow);
-    display: flex;
-    flex-direction: column;
-    padding-top: 20px;
     z-index: 1000;
     transition: transform 0.3s ease-in-out;
-
-        /* Organização interna com Flexbox */
     display: flex; 
     flex-direction: column;
-
-    /* Espaçamento interno (topo e base) */
     padding-top: 20px;
-    padding-bottom: 40px; /* << ADICIONE ESTA LINHA para criar o espaço no final */
-    box-sizing: border-box; /* << ADICIONE ESTA LINHA para garantir que o padding não estoure a altura */
-
+    padding-bottom: 20px; /* Espaço no final */
+    box-sizing: border-box; 
 }
 
 .sidebar-header {
     text-align: center;
     margin-bottom: 30px;
     padding: 0 20px;
+    flex-shrink: 0; /* Impede que o header encolha */
 }
 
 .sidebar-header h2 {
@@ -52,27 +47,22 @@ body {
     margin: 0;
 }
 
+/* --- ÁREA DE SCROLL DA SIDEBAR --- */
 .sidebar-nav {
-    flex-grow: 1;
-    overflow-y: auto;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none;  /* IE and Edge */
+    flex-grow: 1; /* Ocupa o espaço restante */
+    overflow-y: auto; /* Habilita o scroll vertical QUANDO necessário */
+    scrollbar-width: none; /* Esconde a barra de scroll no Firefox */
+    -ms-overflow-style: none;  /* Esconde a barra de scroll no IE e Edge */
 }
 
 .sidebar-nav::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, and Opera */
+    display: none; /* Esconde a barra de scroll no Chrome, Safari, etc. */
 }
 
 .sidebar-nav ul {
     list-style: none;
     padding: 0;
     margin: 0;
-}
-
-.sidebar-nav li.active > a,
-.sidebar-nav a:hover {
-    background-color: var(--primary-color);
-    color: #fff;
 }
 
 .sidebar-nav a {
@@ -85,14 +75,18 @@ body {
     transition: background-color 0.3s, color 0.3s;
 }
 
+
+
 .main-content {
     margin-left: 250px;
     width: calc(100% - 250px);
     padding: 20px;
     transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out;
+    overflow-y: auto;  /* ADICIONE ISTO: Adiciona a barra de rolagem apenas nesta área */
+    box-sizing: border-box;
 }
 
-/* --- LÓGICA DE RECOLHIMENTO (DESKTOP) --- */
+/* --- LÓGICA DE RECOLHIMENTO (SIDEBAR FECHADA) --- */
 body.sidebar-collapsed .sidebar {
     transform: translateX(-100%);
 }
@@ -105,13 +99,13 @@ body.sidebar-collapsed .main-content {
 /* --- HEADER E BOTÃO DE TOGGLE --- */
 .header {
     display: flex;
-    align-items: center; /* Alinha o botão com o título */
+    align-items: center;
     margin-bottom: 20px;
 }
 
 .header h1 {
     margin: 0;
-    flex-grow: 1; /* Faz o título ocupar o espaço restante */
+    flex-grow: 1;
 }
 
 .user-info {
@@ -124,10 +118,76 @@ body.sidebar-collapsed .main-content {
     font-size: 1.5rem;
     color: var(--primary-color);
     cursor: pointer;
-    margin-right: 1.5rem; /* Aumenta o espaçamento */
+    margin-right: 1.5rem;
     padding: 5px;
-    display: block; /* Visível por padrão */
+    display: block;
 }
+
+/* --- VERSÃO MOBILE 📱 --- */
+.mobile-header, .overlay {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    body { 
+        display: block; /* Remove o flex do desktop */
+    }
+
+    .sidebar {
+        left: auto;
+        right: 0;
+        width: 70%; 
+        transform: translateX(100%); /* Posição inicial: escondida à direita */
+    }
+
+    /* Regra para EXIBIR a sidebar no mobile quando o body TEM a classe .sidebar-open */
+    body.sidebar-open .sidebar {
+        transform: translateX(0); /* Posição final: visível */
+    }
+    
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 10px; /* Reduz padding no mobile */
+    }
+
+    .header { display: none; } /* Esconde header do desktop */
+
+    .mobile-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        background-color: var(--sidebar-bg);
+        box-shadow: var(--shadow);
+        position: sticky; top: 0; z-index: 900;
+    }
+    .mobile-header h2 { color: var(--primary-color); margin: 0; }
+    #menu-toggle { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--primary-color); }
+
+    .menu-toggle-btn {
+        display: none; /* Esconde o botão do desktop no mobile */
+    }
+
+    /* --- LÓGICA DO OVERLAY --- */
+    .overlay {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        z-index: 998;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease;
+    }
+
+    .overlay.active {
+        display: block;
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
 
 /* --- KPIs E GRÁFICOS (Sem alterações) --- */
 .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; }
@@ -200,4 +260,27 @@ body.sidebar-collapsed .main-content {
         opacity: 1;
         visibility: visible;
     }
+}
+
+.kpi-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+.kpi-card-link:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+}
+
+.sidebar-nav a:hover,
+.sidebar-nav a.active {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.sidebar-nav li.active > a,
+.sidebar-nav a:hover {
+    background-color: var(--primary-color);
+    color: #fff;
 }
