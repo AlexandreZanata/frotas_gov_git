@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Sep 04, 2025 at 09:14 PM
+-- Generation Time: Sep 05, 2025 at 08:10 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -261,6 +261,42 @@ CREATE TABLE `notifications` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `oil_change_logs`
+--
+
+CREATE TABLE `oil_change_logs` (
+  `id` int(11) NOT NULL,
+  `vehicle_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL COMMENT 'Usuário que registrou a troca',
+  `secretariat_id` int(11) NOT NULL,
+  `oil_product_id` int(11) NOT NULL,
+  `liters_used` decimal(5,2) NOT NULL,
+  `total_cost` decimal(10,2) NOT NULL,
+  `current_km` int(10) UNSIGNED NOT NULL,
+  `notes` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `oil_products`
+--
+
+CREATE TABLE `oil_products` (
+  `id` int(11) NOT NULL,
+  `name` varchar(150) NOT NULL COMMENT 'Ex: Óleo 5W-30 Sintético',
+  `brand` varchar(100) DEFAULT NULL COMMENT 'Ex: Castrol, Mobil',
+  `stock_liters` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `cost_per_liter` decimal(10,2) NOT NULL,
+  `secretariat_id` int(11) DEFAULT NULL COMMENT 'Se NULL, é um produto global (visível para todos)',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `roles`
 --
 
@@ -357,12 +393,28 @@ CREATE TABLE `vehicles` (
   `name` varchar(100) NOT NULL COMMENT 'Ex: FORD/RANGER XL CD4',
   `plate` varchar(10) NOT NULL COMMENT 'Placa do veículo',
   `prefix` varchar(20) NOT NULL COMMENT 'Prefixo ou abreviação, ex: V-123',
+  `category_id` int(11) DEFAULT 1,
   `current_secretariat_id` int(11) NOT NULL,
   `fuel_tank_capacity_liters` decimal(5,2) DEFAULT NULL,
   `avg_km_per_liter` decimal(5,2) DEFAULT NULL,
   `status` enum('available','in_use','maintenance','blocked') NOT NULL DEFAULT 'available',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `last_oil_change_km` int(10) UNSIGNED DEFAULT NULL COMMENT 'KM da última troca de óleo',
+  `last_oil_change_date` date DEFAULT NULL COMMENT 'Data da última troca de óleo',
+  `next_oil_change_km` int(10) UNSIGNED DEFAULT NULL COMMENT 'KM previsto para a próxima troca',
+  `next_oil_change_date` date DEFAULT NULL COMMENT 'Data prevista para a próxima troca'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `vehicle_categories`
+--
+
+CREATE TABLE `vehicle_categories` (
+  `id` int(11) NOT NULL,
+  `name` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -518,6 +570,23 @@ ALTER TABLE `notifications`
   ADD KEY `manager_id` (`manager_id`);
 
 --
+-- Indexes for table `oil_change_logs`
+--
+ALTER TABLE `oil_change_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `vehicle_id` (`vehicle_id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `secretariat_id` (`secretariat_id`),
+  ADD KEY `oil_product_id` (`oil_product_id`);
+
+--
+-- Indexes for table `oil_products`
+--
+ALTER TABLE `oil_products`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `secretariat_id` (`secretariat_id`);
+
+--
 -- Indexes for table `roles`
 --
 ALTER TABLE `roles`
@@ -566,6 +635,13 @@ ALTER TABLE `vehicles`
   ADD UNIQUE KEY `plate` (`plate`),
   ADD UNIQUE KEY `prefix` (`prefix`),
   ADD KEY `current_secretariat_id` (`current_secretariat_id`);
+
+--
+-- Indexes for table `vehicle_categories`
+--
+ALTER TABLE `vehicle_categories`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `name` (`name`);
 
 --
 -- Indexes for table `vehicle_transfers`
@@ -679,6 +755,18 @@ ALTER TABLE `notifications`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `oil_change_logs`
+--
+ALTER TABLE `oil_change_logs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `oil_products`
+--
+ALTER TABLE `oil_products`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `roles`
 --
 ALTER TABLE `roles`
@@ -712,6 +800,12 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `vehicles`
 --
 ALTER TABLE `vehicles`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `vehicle_categories`
+--
+ALTER TABLE `vehicle_categories`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
@@ -815,6 +909,21 @@ ALTER TABLE `notifications`
   ADD CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`checklist_id`) REFERENCES `checklists` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `notifications_ibfk_2` FOREIGN KEY (`secretariat_id`) REFERENCES `secretariats` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `notifications_ibfk_3` FOREIGN KEY (`manager_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `oil_change_logs`
+--
+ALTER TABLE `oil_change_logs`
+  ADD CONSTRAINT `oil_change_logs_ibfk_1` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `oil_change_logs_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `oil_change_logs_ibfk_3` FOREIGN KEY (`secretariat_id`) REFERENCES `secretariats` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `oil_change_logs_ibfk_4` FOREIGN KEY (`oil_product_id`) REFERENCES `oil_products` (`id`);
+
+--
+-- Constraints for table `oil_products`
+--
+ALTER TABLE `oil_products`
+  ADD CONSTRAINT `oil_products_ibfk_1` FOREIGN KEY (`secretariat_id`) REFERENCES `secretariats` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `runs`

@@ -498,15 +498,18 @@ class SectorManagerController
             $secretariats = $this->conn->query("SELECT id, name FROM secretariats ORDER BY name ASC")->fetchAll();
         }
 
-        $data = [
-            'csrf_token' => $_SESSION['csrf_token'],
-            'secretariats' => $secretariats,
-            'initialVehicles' => $this->fetchVehiclesWithPagination()
-        ];
+    $categories = $this->conn->query("SELECT id, name FROM vehicle_categories ORDER BY name ASC")->fetchAll();
 
-        extract($data);
-        require_once __DIR__ . '/../../templates/pages/sector_manager/manage_vehicles.php';
-    }
+    $data = [
+        'csrf_token' => $_SESSION['csrf_token'],
+        'secretariats' => $secretariats,
+        'initialVehicles' => $this->fetchVehiclesWithPagination(),
+        'categories' => $categories // Passa as categorias para a view
+    ];
+
+    extract($data);
+    require_once __DIR__ . '/../../templates/pages/sector_manager/manage_vehicles.php';
+}
 
     /**
      * ATUALIZADO: Busca veículos com base na permissão.
@@ -514,9 +517,10 @@ class SectorManagerController
     private function fetchVehiclesWithPagination($filters = [], $page = 1, $perPage = 10)
     {
         // SQL com join para nome da secretaria
-        $sql = "SELECT v.*, s.name as secretariat_name 
+        $sql = "SELECT v.*, s.name as secretariat_name, vc.name as category_name
                 FROM vehicles v
-                LEFT JOIN secretariats s ON v.current_secretariat_id = s.id";
+                LEFT JOIN secretariats s ON v.current_secretariat_id = s.id
+                LEFT JOIN vehicle_categories vc ON v.category_id = vc.id"; // <-- ADICIONAR JOIN
         $params = [];
 
         if ($_SESSION['user_role_id'] == 2) {
@@ -604,6 +608,7 @@ class SectorManagerController
         $name = trim($_POST['name']);
         $plate = trim(strtoupper($_POST['plate']));
         $prefix = trim(strtoupper($_POST['prefix']));
+        $category_id = filter_input(INPUT_POST, 'category_id', FILTER_VALIDATE_INT);
         $fuel_capacity = !empty($_POST['fuel_tank_capacity_liters']) ? filter_var($_POST['fuel_tank_capacity_liters'], FILTER_VALIDATE_FLOAT) : null;
         $avg_consumption = !empty($_POST['avg_km_per_liter']) ? filter_var($_POST['avg_km_per_liter'], FILTER_VALIDATE_FLOAT) : null;
         $status = in_array($_POST['status'], ['available', 'in_use', 'maintenance', 'blocked']) ? $_POST['status'] : 'available';
@@ -631,17 +636,17 @@ class SectorManagerController
 
         try {
             $this->conn->beginTransaction();
-            $stmt = $this->conn->prepare(
-                "INSERT INTO vehicles (name, plate, prefix, current_secretariat_id, fuel_tank_capacity_liters, avg_km_per_liter, status)
-                 VALUES (:name, :plate, :prefix, :secretariat_id, :fuel_capacity, :avg_consumption, :status)"
-            );
+                $stmt = $this->conn->prepare(
+                    "INSERT INTO vehicles (name, plate, prefix, category_id, current_secretariat_id, fuel_tank_capacity_liters, avg_km_per_liter, status)
+                    VALUES (:name, :plate, :prefix, :category_id, :secretariat_id, :fuel_capacity, :avg_consumption, :status)" // <-- ALTERADO
+                );
             $newData = [
-                'name' => $name, 'plate' => $plate, 'prefix' => $prefix,
+                'name' => $name, 'plate' => $plate, 'prefix' => $prefix, 'category_id' => $category_id,
                 'secretariat_id' => $secretariat_id, 'fuel_capacity' => $fuel_capacity,
                 'avg_consumption' => $avg_consumption, 'status' => $status
             ];
             $stmt->execute([
-                ':name' => $name, ':plate' => $plate, ':prefix' => $prefix,
+                ':name' => $name, ':plate' => $plate, ':prefix' => $prefix, ':category_id' => $category_id, 
                 ':secretariat_id' => $secretariat_id, ':fuel_capacity' => $fuel_capacity,
                 ':avg_consumption' => $avg_consumption, ':status' => $status
             ]);
@@ -684,6 +689,7 @@ class SectorManagerController
         $name = trim($_POST['name']);
         $plate = trim(strtoupper($_POST['plate']));
         $prefix = trim(strtoupper($_POST['prefix']));
+        $category_id = filter_input(INPUT_POST, 'category_id', FILTER_VALIDATE_INT);
         $fuel_capacity = !empty($_POST['fuel_tank_capacity_liters']) ? filter_var(str_replace(',', '.', $_POST['fuel_tank_capacity_liters']), FILTER_VALIDATE_FLOAT) : null;
         $avg_consumption = !empty($_POST['avg_km_per_liter']) ? filter_var(str_replace(',', '.', $_POST['avg_km_per_liter']), FILTER_VALIDATE_FLOAT) : null;
         $status = in_array($_POST['status'], ['available', 'in_use', 'maintenance', 'blocked']) ? $_POST['status'] : 'available';
@@ -695,9 +701,9 @@ class SectorManagerController
         try {
             $this->conn->beginTransaction();
 
-            $sql = "UPDATE vehicles SET name = :name, plate = :plate, prefix = :prefix, fuel_tank_capacity_liters = :fuel_capacity, avg_km_per_liter = :avg_consumption, status = :status WHERE id = :id";
+            $sql = "UPDATE vehicles SET name = :name, plate = :plate, prefix = :prefix, category_id = :category_id, fuel_tank_capacity_liters = :fuel_capacity, avg_km_per_liter = :avg_consumption, status = :status WHERE id = :id";
             $params = [
-                ':name' => $name, ':plate' => $plate, ':prefix' => $prefix,
+                ':name' => $name, ':plate' => $plate, ':prefix' => $prefix, ':category_id' => $category_id,
                 ':fuel_capacity' => $fuel_capacity, ':avg_consumption' => $avg_consumption,
                 ':status' => $status, ':id' => $vehicleId
             ];
@@ -709,7 +715,7 @@ class SectorManagerController
             $stmt->execute($params);
 
             $newData = [
-                'name' => $name, 'plate' => $plate, 'prefix' => $prefix,
+                'name' => $name, 'plate' => $plate, 'prefix' => $prefix, 'category_id' => $category_id,
                 'fuel_tank_capacity_liters' => $fuel_capacity,
                 'avg_km_per_liter' => $avg_consumption, 'status' => $status
             ];
@@ -829,4 +835,113 @@ class SectorManagerController
             show_error_page('Erro de Banco de Dados', 'Não foi possível carregar o histórico de veículos.', 500);
         }
     }
+        public function manageCategories()
+    {
+        if ($_SESSION['user_role_id'] != 1) {
+            show_error_page('Acesso Negado', 'Apenas o Administrador Geral pode gerenciar categorias.', 403);
+        }
+        // Este método simplesmente redireciona para a página de veículos,
+        // onde o gerenciamento de categorias será feito.
+        header('Location: ' . BASE_URL . '/sector-manager/vehicles');
+        exit();
+    }
+
+    public function ajax_store_category()
+    {
+        header('Content-Type: application/json');
+        if ($_SESSION['user_role_id'] != 1) {
+            echo json_encode(['success' => false, 'message' => 'Acesso negado.']);
+            return;
+        }
+
+        try {
+            $data = json_decode(file_get_contents('php://input'), true);
+            $name = trim($data['name'] ?? '');
+            if (empty($name)) throw new Exception("O nome da categoria é obrigatório.");
+
+            $stmt = $this->conn->prepare("INSERT INTO vehicle_categories (name) VALUES (?)");
+            $stmt->execute([$name]);
+            
+            $newCategoryId = $this->conn->lastInsertId();
+            $this->auditLog->log($_SESSION['user_id'], 'create_category', 'vehicle_categories', $newCategoryId, null, ['name' => $name]);
+
+            echo json_encode(['success' => true, 'message' => 'Categoria adicionada!', 'category' => ['id' => $newCategoryId, 'name' => $name]]);
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+
+
+    public function ajax_update_category()
+    {
+        header('Content-Type: application/json');
+        if ($_SESSION['user_role_id'] != 1) {
+            echo json_encode(['success' => false, 'message' => 'Acesso negado.']);
+            return;
+        }
+
+        try {
+            $data = json_decode(file_get_contents('php://input'), true);
+            $id = filter_var($data['id'] ?? 0, FILTER_VALIDATE_INT);
+            $name = trim($data['name'] ?? '');
+
+            if (!$id || empty($name)) {
+                throw new Exception("Dados inválidos para atualizar a categoria.");
+            }
+
+            $stmt_old = $this->conn->prepare("SELECT name FROM vehicle_categories WHERE id = ?");
+            $stmt_old->execute([$id]);
+            $oldName = $stmt_old->fetchColumn();
+
+            $stmt = $this->conn->prepare("UPDATE vehicle_categories SET name = ? WHERE id = ?");
+            $stmt->execute([$name, $id]);
+
+            $this->auditLog->log($_SESSION['user_id'], 'update_category', 'vehicle_categories', $id, ['name' => $oldName], ['name' => $name]);
+
+            echo json_encode(['success' => true, 'message' => 'Categoria atualizada com sucesso!']);
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    public function ajax_delete_category()
+    {
+        header('Content-Type: application/json');
+        if ($_SESSION['user_role_id'] != 1) {
+            echo json_encode(['success' => false, 'message' => 'Acesso negado.']);
+            return;
+        }
+
+        try {
+            $data = json_decode(file_get_contents('php://input'), true);
+            $id = filter_var($data['id'] ?? 0, FILTER_VALIDATE_INT);
+            if (!$id) throw new Exception("ID da categoria inválido.");
+
+            // Verifica se a categoria está em uso antes de excluir
+            $stmt_check = $this->conn->prepare("SELECT COUNT(*) FROM vehicles WHERE category_id = ?");
+            $stmt_check->execute([$id]);
+            if ($stmt_check->fetchColumn() > 0) {
+                throw new Exception("Esta categoria não pode ser excluída pois está associada a um ou mais veículos.");
+            }
+            
+            $stmt_old = $this->conn->prepare("SELECT name FROM vehicle_categories WHERE id = ?");
+            $stmt_old->execute([$id]);
+            $oldName = $stmt_old->fetchColumn();
+
+            $stmt = $this->conn->prepare("DELETE FROM vehicle_categories WHERE id = ?");
+            $stmt->execute([$id]);
+
+            $this->auditLog->log($_SESSION['user_id'], 'delete_category', 'vehicle_categories', $id, ['name' => $oldName], null);
+
+            echo json_encode(['success' => true, 'message' => 'Categoria excluída com sucesso!']);
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
 }
+
