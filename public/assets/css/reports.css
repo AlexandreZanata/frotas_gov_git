@@ -116,4 +116,21 @@
 
 .btn-generate-report i {
     font-size: 1.2em;
+    
+}
+
+/* Adicionar no final de public/assets/css/reports.css */
+@media (max-width: 768px) {
+    .report-form-container {
+        padding: 1.5rem 1rem;
+        margin: 0;
+        box-shadow: none;
+        border-radius: 0;
+    }
+    .form-row {
+        grid-template-columns: 1fr; /* Coluna única */
+    }
+    .date-shortcuts {
+        justify-content: center;
+    }
 }

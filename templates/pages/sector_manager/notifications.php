@@ -25,9 +25,18 @@
     </style>
 </head>
 <body>
+    <div class="overlay"></div>
     <?php include_once __DIR__ . '/../../layouts/sector_manager_sidebar.php'; ?>
 
     <main class="main-content">
+        <header class="mobile-header">
+            <h2>Notificações de Manutenção</h2>
+            <button id="menu-toggle" aria-label="Abrir menu" aria-expanded="false">
+                <i class="fas fa-bars"></i>
+            </button>
+        </header>
+
+
         <header class="header">
             <h1>Notificações de Manutenção</h1>
             <?php if ($_SESSION['user_role_id'] == 1 && isset($_GET['id'])): ?>
@@ -88,5 +97,6 @@
             <?php endif; ?>
         </div>
     </main>
+    <script src="<?php echo BASE_URL; ?>/assets/js/admin_dashboard.js"></script>
 </body>
 </html>

@@ -13,7 +13,21 @@
     <?php include_once __DIR__ . '/../../layouts/sector_manager_sidebar.php'; ?>
 
     <main class="main-content">
+
+        <header class="mobile-header">
+            <h2>Histórico de Alterações de Transferências</h2>
+            <button id="menu-toggle" aria-label="Abrir menu" aria-expanded="false">
+                <i class="fas fa-bars"></i>
+            </button>
+             <a href="<?php echo BASE_URL; ?>/transfers" style="text-decoration: none; color: #333;">&larr; Voltar</a>
+        </header>
+
+
+
         <header class="header">
+            <button id="desktop-menu-toggle" class="menu-toggle-btn" aria-label="Alternar menu" aria-expanded="true">
+                <i class="fas fa-bars"></i>
+            </button>
             <h1>Histórico de Alterações de Transferências</h1>
             <a href="<?php echo BASE_URL; ?>/transfers" style="text-decoration: none; color: #333;">&larr; Voltar</a>
         </header>
@@ -58,5 +72,6 @@
             </div>
         </div>
     </main>
+    <script src="<?php echo BASE_URL; ?>/assets/js/admin_dashboard.js"></script>
 </body>
 </html>

@@ -13,7 +13,23 @@
     <?php include_once __DIR__ . '/../../layouts/sector_manager_sidebar.php'; ?>
 
     <main class="main-content">
+        <header class="mobile-header">
+                        <button id="menu-toggle" aria-label="Abrir menu" aria-expanded="false">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h2>Status da Frota</h2>
+
+                        <div class="header-actions">
+
+                <a href="<?php echo BASE_URL; ?>/dashboard" class="back-to-panel">&larr; Voltar ao Painel</a>
+            </div>
+        </header>
+
+    
         <header class="header">
+            <button id="desktop-menu-toggle" class="menu-toggle-btn" aria-label="Alternar menu" aria-expanded="true">
+                <i class="fas fa-bars"></i>
+            </button>
             <h1>Status da Frota em Tempo Real</h1>
             <div class="header-actions">
                 <a href="<?php echo BASE_URL; ?>/sector-manager/vehicles/status/history" class="btn-history">
@@ -98,5 +114,7 @@
         const CSRF_TOKEN = "<?php echo htmlspecialchars($csrf_token); ?>";
     </script>
     <script src="<?php echo BASE_URL; ?>/assets/js/vehicle_status.js"></script>
+    <script src="<?php echo BASE_URL; ?>/assets/js/dashboard.js" defer></script>
+    <script src="<?php echo BASE_URL; ?>/assets/js/admin_dashboard.js" defer></script>
 </body>
 </html>

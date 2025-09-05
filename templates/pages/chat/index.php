@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat - Frotas Gov</title>
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/admin_dashboard.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/chat.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/admin_dashboard.css">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     
     <?php 
@@ -39,9 +40,27 @@
     <?php endif; ?>
 </head>
 <body>
+    <div class="overlay"></div>
     <?php include_once __DIR__ . '/../../layouts/sector_manager_sidebar.php'; ?>
 
     <main class="main-content" style="padding: 0;">
+
+            <header class="mobile-header">
+            <h2>chat</h2>
+            <button id="menu-toggle" aria-label="Abrir menu" aria-expanded="false">
+                <i class="fas fa-bars"></i>
+            </button>
+        </header>
+
+        <header class="header">
+            <button id="desktop-menu-toggle" class="menu-toggle-btn" aria-label="Alternar menu" aria-expanded="true">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h1>chat</h1>
+            <div class="user-info">
+                <span>Olá, <?php echo htmlspecialchars($_SESSION['user_name']); ?>!</span>
+            </div>
+        </header>
         <div class="chat-container">
             <aside class="chat-sidebar">
                 <div class="chat-sidebar-header">
@@ -59,10 +78,11 @@
             </aside>
 
             <section class="chat-main">
-                <div class="chat-header">
-                    <h3 id="current-chat-name">Selecione uma conversa</h3>
-                    <div id="current-chat-participants"></div>
-                </div>
+<div class="chat-header">
+    <button class="back-to-conversations"><i class="fas fa-arrow-left"></i></button>
+    <h3 id="current-chat-name">Selecione uma conversa</h3>
+    <div id="current-chat-participants"></div>
+</div>
                 <div class="messages-area" id="messages-area">
                     <div class="empty-chat-state">
                         <i class="fas fa-comments"></i>
@@ -319,5 +339,6 @@
         const USER_ROLE = <?php echo $user_role; ?>;
     </script>
     <script src="<?php echo BASE_URL; ?>/assets/js/chat.js"></script>
+    <script src="<?php echo BASE_URL; ?>/assets/js/admin_dashboard.js"></script>
 </body>
 </html>

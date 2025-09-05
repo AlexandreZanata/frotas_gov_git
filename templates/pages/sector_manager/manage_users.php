@@ -14,8 +14,22 @@
     <?php include_once __DIR__ . '/../../layouts/sector_manager_sidebar.php'; // Vamos criar um sidebar reutilizável ?>
 
     <main class="main-content">
+
+        <header class="mobile-header">
+            <h2>Controle de Usuários</h2>
+            <button id="menu-toggle" aria-label="Abrir menu" aria-expanded="false">
+                <i class="fas fa-bars"></i>
+            </button>
+        </header>
+
         <header class="header">
+            <button id="desktop-menu-toggle" class="menu-toggle-btn" aria-label="Alternar menu" aria-expanded="true">
+                <i class="fas fa-bars"></i>
+            </button>
             <h1>Controle de Usuários</h1>
+            <div class="user-info">
+                <span>Olá, <?php echo htmlspecialchars($_SESSION['user_name']); ?>!</span>
+            </div>
         </header>
 
         <div class="content-body">
@@ -67,5 +81,7 @@
         </div>
     </main>
     <script src="<?php echo BASE_URL; ?>/assets/js/admin_dashboard.js"></script>
+
+    
     </body>
 </html>

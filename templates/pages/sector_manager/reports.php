@@ -32,8 +32,21 @@
     <?php include_once __DIR__ . '/../../layouts/sector_manager_sidebar.php'; ?>
 
     <main class="main-content">
+        <header class="mobile-header">
+            <h2>Relatórios da Secretaria</h2>
+            <button id="menu-toggle" aria-label="Abrir menu" aria-expanded="false">
+                <i class="fas fa-bars"></i>
+            </button>
+        </header>
+
         <header class="header">
+            <button id="desktop-menu-toggle" class="menu-toggle-btn" aria-label="Alternar menu" aria-expanded="true">
+                <i class="fas fa-bars"></i>
+            </button>
             <h1>Relatórios da Secretaria</h1>
+            <div class="user-info">
+                <span>Olá, <?php echo htmlspecialchars($_SESSION['user_name']); ?>!</span>
+            </div>
         </header>
 
         <div class="content-body">
@@ -41,7 +54,7 @@
                 <h2 class="section-title">Gerar Relatório Detalhado</h2>
                 <form action="<?php echo BASE_URL; ?>/sector-manager/reports/generate" method="GET" target="_blank">
                     
-                    <!-- Adicionar este bloco em /templates/pages/sector_manager/reports.php -->
+   
 <?php if ($_SESSION['user_role_id'] == 1 && !empty($secretariats)): ?>
     <div class="form-group">
         <label for="secretariat_id">Secretaria</label>
@@ -106,5 +119,7 @@
         const BASE_URL = "<?php echo BASE_URL; ?>";
     </script>
     <script src="<?php echo BASE_URL; ?>/assets/js/reports.js"></script>
+        <script src="<?php echo BASE_URL; ?>/assets/js/dashboard.js" defer></script>
+    <script src="<?php echo BASE_URL; ?>/assets/js/admin_dashboard.js" defer></script>
 </body>
 </html>

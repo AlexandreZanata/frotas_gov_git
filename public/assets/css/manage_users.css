@@ -359,3 +359,21 @@
             font-size: 0.9em;
             margin-left: 5px;
         }
+/* Adicionar no final de public/assets/css/manage_users.css */
+
+/* Tabela Responsiva com Rolagem Horizontal */
+@media (max-width: 768px) {
+    .table-container {
+        padding: 0;
+        box-shadow: none;
+        border-radius: 0;
+        overflow-x: auto; /* Permite rolar a tabela horizontalmente */
+    }
+    .user-table {
+        min-width: 600px; /* Força a tabela a ter uma largura mínima, ativando a rolagem */
+    }
+    .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}

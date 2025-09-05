@@ -9,10 +9,22 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
 <body>
+    <div class="overlay"></div>
     <?php include_once __DIR__ . '/../../layouts/sector_manager_sidebar.php'; ?>
 
     <main class="main-content">
+
+        <header class="mobile-header">
+            <h2>Análise de Gastos com Combustível</h2>
+            <button id="menu-toggle" aria-label="Abrir menu" aria-expanded="false">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a href="<?php echo BASE_URL; ?>/dashboard" class="back-link"><i class="fas fa-arrow-left"></i> Voltar ao Painel</a>
+        </header>
         <header class="header">
+            <button id="desktop-menu-toggle" class="menu-toggle-btn" aria-label="Alternar menu" aria-expanded="true">
+                <i class="fas fa-bars"></i>
+            </button>
             <h1>Análise de Gastos com Combustível</h1>
             <a href="<?php echo BASE_URL; ?>/dashboard" class="back-link"><i class="fas fa-arrow-left"></i> Voltar ao Painel</a>
         </header>
@@ -75,5 +87,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <script src="<?php echo BASE_URL; ?>/assets/js/fuel_analysis.js"></script>
+    <script src="<?php echo BASE_URL; ?>/assets/js/admin_dashboard.js"></script>
+
 </body>
 </html>

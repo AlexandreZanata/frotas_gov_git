@@ -216,7 +216,7 @@ body {
         left: auto;
         right: 0;
         width: 65%;
-        transform: translateX(100%);
+        transform: translateX(-100%); /* Começa fora da tela, à esquerda */
     }
 
     .sidebar.open {

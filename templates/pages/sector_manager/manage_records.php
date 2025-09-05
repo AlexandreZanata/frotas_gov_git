@@ -13,7 +13,22 @@
     <div class="overlay"></div>
     <?php include_once __DIR__ . '/../../layouts/sector_manager_sidebar.php'; ?>
     <main class="main-content">
-        <header class="header"><h1>Gerenciamento de Corridas e Abastecimentos</h1></header>
+        <header class="mobile-header">
+            <h2>Gerenciamento de Corridas e Abastecimentos</h2>
+            <button id="menu-toggle" aria-label="Abrir menu" aria-expanded="false">
+                <i class="fas fa-bars"></i>
+            </button>
+        </header>
+
+        <header class="header">
+            <button id="desktop-menu-toggle" class="menu-toggle-btn" aria-label="Alternar menu" aria-expanded="true">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h1>Gerenciamento de Corridas e Abastecimentos</h1>
+            <div class="user-info">
+                <span>Olá, <?php echo htmlspecialchars($_SESSION['user_name']); ?>!</span>
+            </div>
+        </header>
         <div class="content-body">
             <div class="form-container">
                 <h2 class="section-title" id="mainFormTitle">Registrar Corrida</h2>
@@ -155,5 +170,6 @@
         const IS_ADMIN = <?php echo ($_SESSION['user_role_id'] == 1) ? 'true' : 'false'; ?>;
     </script>
     <script src="<?php echo BASE_URL; ?>/assets/js/manage_records.js"></script>
+    <script src="<?php echo BASE_URL; ?>/assets/js/admin_dashboard.js"></script>
 </body>
 </html>

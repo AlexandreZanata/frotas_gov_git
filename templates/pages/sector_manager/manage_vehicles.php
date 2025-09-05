@@ -18,13 +18,20 @@
 
     <main class="main-content">
         <header class="mobile-header">
-            <h2>Gerenciar Veículos</h2>
-            <button id="menu-toggle"><i class="fas fa-bars"></i></button>
+            <h2>Cadastro e Controle de Veículos</h2>
+            <button id="menu-toggle" aria-label="Abrir menu" aria-expanded="false">
+                <i class="fas fa-bars"></i>
+            </button>
         </header>
 
         <header class="header">
+            <button id="desktop-menu-toggle" class="menu-toggle-btn" aria-label="Alternar menu" aria-expanded="true">
+                <i class="fas fa-bars"></i>
+            </button>
             <h1>Cadastro e Controle de Veículos</h1>
-            <div class="user-info"><span>Olá, <?php echo htmlspecialchars($_SESSION['user_name']); ?></span></div>
+            <div class="user-info">
+                <span>Olá, <?php echo htmlspecialchars($_SESSION['user_name']); ?>!</span>
+            </div>
         </header>
 
         <div class="content-body">
@@ -172,5 +179,6 @@
     </script>
     <script src="<?php echo BASE_URL; ?>/assets/js/dashboard.js"></script>
     <script src="<?php echo BASE_URL; ?>/assets/js/manage_vehicles.js"></script>
+    <script src="<?php echo BASE_URL; ?>/assets/js/admin_dashboard.js"></script>
 </body>
 </html>

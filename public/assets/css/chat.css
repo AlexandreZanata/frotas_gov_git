@@ -823,3 +823,64 @@ emoji-picker {
     border-radius: 0; /* Remove bordas arredondadas quando em tela cheia */
     box-shadow: none; /* Remove sombra desnecessária */
 }
+
+/* public/assets/css/chat.css */
+/* Adicione este bloco de media query no final do arquivo */
+
+@media (max-width: 768px) {
+    .chat-container {
+        flex-direction: column;
+        height: 100vh; /* Ocupa a altura inteira */
+        position: relative; /* Para posicionar as "telas" */
+        overflow: hidden; /* Evita rolagem indesejada */
+    }
+
+    .chat-sidebar {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        transition: transform 0.3s ease-in-out;
+        transform: translateX(0); /* Visível por padrão */
+        border-right: none;
+    }
+
+    .chat-main {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        transition: transform 0.3s ease-in-out;
+        transform: translateX(100%); /* Escondido à direita por padrão */
+    }
+
+    /* Classe JS para controlar a visualização */
+    .chat-container.view-messages .chat-sidebar {
+        transform: translateX(-100%); /* Esconde a lista */
+    }
+
+    .chat-container.view-messages .chat-main {
+        transform: translateX(0); /* Mostra as mensagens */
+    }
+
+    .chat-header {
+        padding-left: 50px; /* Espaço para o botão de voltar */
+        position: relative;
+    }
+
+    /* Botão de voltar que só aparece no mobile */
+    .back-to-conversations {
+        display: block;
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        font-size: 1.2rem;
+        cursor: pointer;
+    }
+}
+
+/* Esconde o botão de voltar no desktop */
+.back-to-conversations {
+    display: none;
+}

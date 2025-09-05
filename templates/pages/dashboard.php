@@ -43,12 +43,18 @@
 
     <main class="main-content">
         <header class="mobile-header">
+            <button id="menu-toggle" aria-label="Abrir menu" aria-expanded="false">
+                <i class="fas fa-bars"></i>
+            </button>
             <h2>Painel</h2>
             <button id="menu-toggle"><i class="fas fa-bars"></i></button>
         </header>
 
         <header class="header">
             <h1>Painel de Controle</h1>
+            <button id="desktop-menu-toggle" class="menu-toggle-btn" aria-label="Alternar menu" aria-expanded="true">
+                <i class="fas fa-bars"></i>
+            </button>
             <div class="user-info">
                 <span>Olá, <?php echo htmlspecialchars($_SESSION['user_name']); ?>!</span>
             </div>

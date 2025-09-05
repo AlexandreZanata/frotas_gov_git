@@ -350,3 +350,41 @@
     text-align: center;
 }
 
+@media (max-width: 768px) {
+    body {
+        /* Garante que o body não bloqueie o scroll */
+        overflow: auto !important;
+        height: auto !important;
+    }
+    
+    .diario-container {
+        /* Ajusta para fluxo normal em vez de flexbox que pode causar problemas */
+        display: block;
+        min-height: auto;
+        height: auto;
+        /* Cria espaço para o footer fixo */
+        padding-bottom: 70px;
+    }
+    
+    .diario-content {
+        /* Ajusta o conteúdo para permitir scroll */
+        overflow-y: auto;
+        /* Certifica que não há altura fixa limitando o conteúdo */
+        max-height: none;
+    }
+    
+    .diario-footer {
+        /* Garante que o footer fique fixo na parte inferior */
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        
+        
+    }
+    
+    /* Corrige a estrutura do formulário */
+    #checklist-form {
+        padding-bottom: 60px;
+    }
+}

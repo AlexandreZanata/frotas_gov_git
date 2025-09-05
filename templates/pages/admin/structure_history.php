@@ -14,9 +14,20 @@
     <?php include_once __DIR__ . '/../../layouts/sector_manager_sidebar.php'; ?>
 
     <main class="main-content">
+        <header class="mobile-header">
+            <h2>Gerenciar Secretarias e Departamentos</h2>
+            <button id="menu-toggle" aria-label="Abrir menu" aria-expanded="false">
+                <i class="fas fa-bars"></i>
+            </button>
+        </header>
+
         <header class="header">
-            <h1>Histórico de Alterações de Estruturas</h1>
+            <button id="desktop-menu-toggle" class="menu-toggle-btn" aria-label="Alternar menu" aria-expanded="true">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h1>Gerenciar Secretarias e Departamentos</h1>
             <a href="<?php echo BASE_URL; ?>/admin/structure" class="btn-history">&larr; Voltar ao Gerenciamento</a>
+
         </header>
 
         <div class="content-body">
@@ -92,5 +103,6 @@
             </div>
         </div>
     </main>
+    <script src="<?php echo BASE_URL; ?>/assets/js/admin_dashboard.js"></script>
 </body>
 </html>

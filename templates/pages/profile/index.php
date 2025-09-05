@@ -1,36 +1,29 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Meu Perfil - Frotas Gov</title>
-    
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/profile.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/admin_dashboard.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
 
-    <style>
-    /* Força o alinhamento correto da página de perfil */
-    .main-content {
-        margin-left: 115px !important; /* Alinha com a largura exata da sidebar */
-        width: calc(100% - 140px) !important;
-        padding: 20px !important;
-        margin-top: -10px;
-    }
-    
-</style>
+    <!-- CSS específicos da página -->
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/profile.css" />
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/admin_dashboard.css" />
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/sidebar_styles.css">
+
+
+    <!-- Ícones e libs -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
 </head>
 <body>
+    <?php include_once __DIR__ . '/../../layouts/sector_manager_sidebar.php'; ?>
     <div class="overlay"></div>
-    
+
+
     <main class="main-content">
-        <header class="header">
-            <h1>Meu Perfil</h1>
-            <div class="user-info">
-                <span>Olá, <?php echo htmlspecialchars($_SESSION['user_name']); ?></span>
-            </div>
-        </header>
+
+
+
 
         <div class="content-body">
             <?php
@@ -66,7 +59,7 @@
                             <div class="photo-upload-group">
                                 <label>Foto da CNH</label>
                                 <div class="image-preview" id="cnh_photo_preview">
-                                     <img src="<?php echo $user['cnh_photo_path'] ? BASE_URL . '/' . htmlspecialchars($user['cnh_photo_path']) : 'https://via.placeholder.com/240x150'; ?>" alt="Foto da CNH">
+                                    <img src="<?php echo $user['cnh_photo_path'] ? BASE_URL . '/' . htmlspecialchars($user['cnh_photo_path']) : 'https://via.placeholder.com/240x150'; ?>" alt="Foto da CNH">
                                 </div>
                                 <input type="file" name="cnh_photo" id="cnh_photo" class="file-input" accept="image/*">
                                 <label for="cnh_photo" class="btn-upload"><i class="fas fa-upload"></i> Alterar CNH</label>
@@ -75,15 +68,32 @@
                         </div>
 
                         <div class="info-fields-area">
-                            <div class="form-group"><label for="name">Nome Completo</label><input type="text" id="name" name="name" value="<?php echo htmlspecialchars($user['name']); ?>"></div>
-                            <div class="form-group"><label for="email">E-mail</label><input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>"></div>
-                            <div class="form-group"><label for="phone">Telefone / Celular</label><input type="tel" id="phone" name="phone" placeholder="(XX) XXXXX-XXXX" value="<?php echo htmlspecialchars($user['phone'] ?? ''); ?>"></div>
-                            <div class="form-group"><label for="cnh_number">Nº da CNH</label><input type="text" id="cnh_number" name="cnh_number" value="<?php echo htmlspecialchars($user['cnh_number'] ?? ''); ?>"></div>
-                            <div class="form-group"><label for="cnh_expiry_date">Data de Validade da CNH</label><input type="date" id="cnh_expiry_date" name="cnh_expiry_date" value="<?php echo htmlspecialchars($user['cnh_expiry_date'] ?? ''); ?>"></div>
+                            <div class="form-group">
+                                <label for="name">Nome Completo</label>
+                                <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($user['name']); ?>">
+                            </div>
+                            <div class="form-group">
+                                <label for="email">E-mail</label>
+                                <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>">
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Telefone / Celular</label>
+                                <input type="tel" id="phone" name="phone" placeholder="(XX) XXXXX-XXXX" value="<?php echo htmlspecialchars($user['phone'] ?? ''); ?>">
+                            </div>
+                            <div class="form-group">
+                                <label for="cnh_number">Nº da CNH</label>
+                                <input type="text" id="cnh_number" name="cnh_number" value="<?php echo htmlspecialchars($user['cnh_number'] ?? ''); ?>">
+                            </div>
+                            <div class="form-group">
+                                <label for="cnh_expiry_date">Data de Validade da CNH</label>
+                                <input type="date" id="cnh_expiry_date" name="cnh_expiry_date" value="<?php echo htmlspecialchars($user['cnh_expiry_date'] ?? ''); ?>">
+                            </div>
                         </div>
                     </div>
 
-                    <div class="form-actions"><button type="submit" class="btn-submit">Salvar Alterações</button></div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-submit">Salvar Alterações</button>
+                    </div>
                 </form>
             </div>
 
@@ -91,7 +101,7 @@
                 <h2 class="section-title">Alterar Senha</h2>
                 <form action="<?php echo BASE_URL; ?>/profile/change-password" method="POST">
                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
-                    
+
                     <div class="form-group">
                         <label for="current_password">Senha Atual</label>
                         <div class="password-wrapper">
@@ -101,7 +111,7 @@
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="new_password">Nova Senha (mínimo 8 caracteres)</label>
                         <div class="password-wrapper">
@@ -111,7 +121,7 @@
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="confirm_password">Confirmar Nova Senha</label>
                         <div class="password-wrapper">
@@ -121,8 +131,10 @@
                             </button>
                         </div>
                     </div>
-                    
-                    <div class="form-actions"><button type="submit" class="btn-submit">Alterar Senha</button></div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-submit">Alterar Senha</button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -152,5 +164,12 @@
     <script src="<?php echo BASE_URL; ?>/assets/js/form-masks-edit.js"></script>
     <script src="<?php echo BASE_URL; ?>/assets/js/profile.js"></script>
     <script src="<?php echo BASE_URL; ?>/assets/js/main.js"></script>
+
+    <!-- JS global da sidebar (controla abrir/fechar no desktop e mobile) -->
+    <script src="<?php echo BASE_URL; ?>/assets/js/sidebar_toggle.js" defer></script>
+
+    <!-- Se necessários para outras funcionalidades globais -->
+    <script src="<?php echo BASE_URL; ?>/assets/js/dashboard.js" defer></script>
+    <script src="<?php echo BASE_URL; ?>/assets/js/admin_dashboard.js" defer></script>
 </body>
 </html>
