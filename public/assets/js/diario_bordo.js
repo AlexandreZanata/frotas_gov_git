@@ -268,3 +268,65 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// Adicione esse código ao seu arquivo JavaScript que controla o diário de bordo
+document.addEventListener('DOMContentLoaded', function() {
+    // Armazena o estado atual da barra lateral no localStorage
+    const sidebarState = localStorage.getItem('sidebarState') || 'closed';
+    
+    // Referências aos elementos
+    const body = document.body;
+    const overlay = document.querySelector('.overlay');
+    const menuToggleBtn = document.getElementById('menu-toggle');
+    
+    // Previne a abertura automática na troca de páginas
+    if (body.classList.contains('sidebar-open')) {
+        body.classList.remove('sidebar-open');
+    }
+    
+    // Aplica o estado salvo anteriormente
+    if (sidebarState === 'open') {
+        body.classList.add('sidebar-open');
+        if (overlay) overlay.classList.add('active');
+    }
+    
+    // Manipulador de eventos para o botão de menu
+    if (menuToggleBtn) {
+        menuToggleBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            body.classList.toggle('sidebar-open');
+            
+            if (overlay) {
+                overlay.classList.toggle('active');
+            }
+            
+            // Salva o estado atual
+            localStorage.setItem('sidebarState', 
+                body.classList.contains('sidebar-open') ? 'open' : 'closed');
+        });
+    }
+    
+    // Fecha a barra lateral ao clicar no overlay
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            body.classList.remove('sidebar-open');
+            overlay.classList.remove('active');
+            localStorage.setItem('sidebarState', 'closed');
+        });
+    }
+    
+    // Previne a abertura automática nos formulários
+    const formElements = document.querySelectorAll('form');
+    formElements.forEach(form => {
+        form.addEventListener('submit', function() {
+            // Salva que a barra lateral deve estar fechada na próxima página
+            localStorage.setItem('sidebarState', 'closed');
+        });
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        document.body.classList.add('loaded');
+    }, 100);
+});

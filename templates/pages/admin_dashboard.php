@@ -58,6 +58,12 @@
                     <a href="<?php echo BASE_URL; ?>/transfers"><i class="fas fa-exchange-alt"></i> Transferências</a>
                 </li>
 
+            <?php if (isset($_SESSION['user_role_id']) && in_array($_SESSION['user_role_id'], [1, 2])):?>
+            <li class="<?php echo (strpos($current_uri, 'oil-change') !== false) ? 'active' : ''; ?>">
+                <a href="<?php echo BASE_URL; ?>/sector-manager/oil-change"><i class="fas fa-oil-can"></i> Troca de Óleo</a>
+            </li>
+            <?php endif; ?>
+
                 <li><a href="<?php echo BASE_URL; ?>/runs/new"><i class="fas fa-book"></i> Diário de Bordo</a></li>
 
                 <li><a href="/frotas-gov/public/logout"><i class="fas fa-sign-out-alt"></i> Sair</a></li>

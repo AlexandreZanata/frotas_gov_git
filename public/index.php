@@ -93,6 +93,11 @@ $router->post('sector-manager/ajax/get-vehicle', 'SectorManagerController@ajax_g
 $router->post('sector-manager/vehicles/update', 'SectorManagerController@updateVehicle');
 $router->post('sector-manager/vehicles/delete', 'SectorManagerController@deleteVehicle');
 $router->get('sector-manager/vehicles/history', 'SectorManagerController@vehicleHistory');
+// ROTA PARA SALVAR CATEGORIA DE VEÍCULO (Admin)
+$router->post('sector-manager/ajax/store-category', 'SectorManagerController@ajax_store_category');
+$router->post('sector-manager/ajax/update-category', 'SectorManagerController@ajax_update_category'); 
+$router->post('sector-manager/ajax/delete-category', 'SectorManagerController@ajax_delete_category'); 
+
 
 // Histórico e listagem
 $router->get('sector-manager/users', 'SectorManagerController@listUsers'); // retrocompatibilidade
@@ -233,6 +238,35 @@ $router->get('sector-manager/vehicles/status/history', 'VehicleStatusController@
 // ROTA PARA ANÁLISE DE COMBUSTÍVEL
 $router->get('sector-manager/reports/fuel-analysis', 'FuelReportController@index');
 $router->get('profile', 'ProfileController@index');
+
+/*
+|--------------------------------------------------------------------------
+| Rotas de Controle de Troca de Óleo
+|--------------------------------------------------------------------------
+*/
+
+$router->get('sector-manager/oil-change', 'OilChangeController@index');
+$router->get('sector-manager/oil-change/ajax_get_vehicles', 'OilChangeController@ajax_get_vehicles');
+$router->post('sector-manager/oil-change/store', 'OilChangeController@store');
+$router->get('sector-manager/oil-stock', 'OilChangeController@stock'); 
+$router->get('sector-manager/oil-change/history', 'OilChangeController@history'); // Rota para o histórico
+
+
+// ROTAS PARA O CRUD DE ESTOQUE
+$router->post('sector-manager/oil-stock/store', 'OilChangeController@store_product');
+$router->get('sector-manager/oil-stock/get', 'OilChangeController@ajax_get_product');
+$router->post('sector-manager/oil-stock/delete', 'OilChangeController@delete_product');
+
+
+/*
+|--------------------------------------------------------------------------
+| Rotas de Configurações (Apenas Admin Geral)
+|--------------------------------------------------------------------------
+*/
+$router->get('admin/settings', 'AdminSettingsController@index');
+$router->post('admin/settings/update', 'AdminSettingsController@update');
+
+
 /*
 |--------------------------------------------------------------------------
 | Processamento da requisição

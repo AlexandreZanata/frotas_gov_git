@@ -1,0 +1,326 @@
+/* public/assets/css/oil_change.css */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+.stat-card {
+    background-color: #fff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border-left: 5px solid #6c757d;
+}
+.stat-card h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    color: #64748b;
+}
+.stat-card .stat-value {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #334155;
+    margin: 0;
+}
+/* Cores específicas dos status */
+.stat-card.status-ok { border-color: #28a745; }
+.stat-card.status-attention { border-color: #ffc107; }
+.stat-card.status-critical { border-color: #dc3545; }
+
+.alerts-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.alert-card {
+    padding: 1rem;
+    border-radius: 8px;
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    color: #856404;
+    font-weight: 600;
+}
+
+/* ... (estilos existentes) ... */
+
+.controls-bar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    align-items: center; /* Alinha verticalmente os itens */
+    flex-wrap: wrap; /* Permite quebrar linha em telas menores */
+}
+
+.search-wrapper { 
+    flex-grow: 1; 
+    position: relative; /* Para posicionar o ícone de busca */
+    display: flex; /* Para alinhar o ícone dentro */
+    align-items: center; /* Alinha o ícone com o input */
+}
+.search-wrapper input {
+    width: 100%;
+    padding: 0.75rem 0.75rem 0.75rem 2.5rem; /* Adiciona padding à esquerda para o ícone */
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+}
+.search-wrapper .fa-search {
+    position: absolute;
+    left: 0.75rem; /* Posição do ícone */
+    color: #94a3b8;
+    font-size: 1rem;
+    width: 20px; /* Largura fixa para o ícone */
+    text-align: center;
+}
+
+.filter-wrapper { 
+    flex-grow: 0; /* Não cresce por padrão, mantém o tamanho do select */
+    width: 200px; /* Largura fixa para o select de filtro, ajuste se necessário */
+}
+.filter-wrapper select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background-color: #fff; /* Garante fundo branco */
+    appearance: none; /* Remove seta padrão do select */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E"); /* Seta customizada */
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1em;
+    padding-right: 2.5rem; /* Espaço para a seta customizada */
+}
+
+.controls-bar .btn-primary {
+    white-space: nowrap; /* Impede quebra de linha do botão */
+    padding: 0.75rem 1.25rem;
+    height: 44px; /* Garante a mesma altura dos outros elementos */
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Ajustes para telas menores */
+@media (max-width: 768px) {
+    .controls-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .search-wrapper, .filter-wrapper {
+        width: 100%;
+    }
+    .controls-bar .btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Estilo do modal de registro, conforme solicitado, se refere ao container principal do modal */
+.modal-content {
+    background-color: #fefefe;
+    margin: auto; /* Centraliza o modal */
+    padding: 2rem;
+    border: 1px solid #888;
+    width: 90%; /* Ajuste a largura conforme necessário */
+    max-width: 700px; /* Largura máxima para modais grandes */
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    position: relative;
+    max-height: 90vh; /* Para garantir que o modal não seja maior que a tela */
+    overflow-y: auto; /* Adiciona scroll se o conteúdo for grande */
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #334155;
+}
+
+.modal-close {
+    color: #aaa;
+    font-size: 2rem;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1; /* Alinha o 'x' corretamente */
+}
+
+.modal-close:hover,
+.modal-close:focus {
+    color: #000;
+    text-decoration: none;
+}
+
+.modal-body {
+    padding-bottom: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 1rem;
+    box-sizing: border-box; /* Garante que padding e border não aumentem a largura */
+}
+
+.form-group input[readonly] {
+    background-color: #f8fafc;
+    cursor: not-allowed;
+}
+
+.form-group small {
+    display: block;
+    margin-top: 0.4rem;
+    color: #64748b;
+    font-size: 0.85rem;
+}
+
+.form-row {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.2rem;
+}
+
+.form-row .form-group {
+    flex: 1; /* Faz com que os grupos de formulário dividam o espaço igualmente */
+    margin-bottom: 0; /* Remove margem extra */
+}
+
+.search-results {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #cbd5e1;
+    border-top: none;
+    max-height: 200px;
+    overflow-y: auto;
+    width: calc(100% - 2px); /* Ajuste a largura para o input */
+    z-index: 1000;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-radius: 0 0 6px 6px;
+    display: none;
+}
+
+.search-results div {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.search-results div:last-child {
+    border-bottom: none;
+}
+
+.search-results div:hover {
+    background-color: #f8fafc;
+}
+
+.modal-footer {
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+    text-align: right;
+}
+
+.modal-footer .btn-primary {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 6px;
+}
+
+
+.vehicle-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+.vehicle-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.card-header {
+    padding: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+.card-header h4 { margin: 0; }
+.card-header span { font-size: 0.9em; color: #64748b; }
+.card-body { padding: 1rem; flex-grow: 1; }
+.progress-group { margin-bottom: 1rem; }
+.progress-label { display: flex; justify-content: space-between; font-size: 0.85em; margin-bottom: 0.25rem; }
+.progress-bar {
+    height: 10px;
+    background-color: #e9ecef;
+    border-radius: 5px;
+    overflow: hidden;
+}
+.progress-fill {
+    height: 100%;
+    background-color: #28a745;
+    border-radius: 5px;
+    transition: width 0.5s ease;
+}
+.card-footer {
+    padding: 1rem;
+    background-color: #f8fafc;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+/* Cores de Status */
+.status-ok .card-footer { color: #155724; background-color: #d4edda; }
+.status-attention .card-footer { color: #856404; background-color: #fff3cd; }
+.status-critical .card-footer { color: #721c24; background-color: #f8d7da; }
+.status-overdue .card-footer { color: #fff; background-color: #721c24; }
+.status-ok .progress-fill { background-color: #28a745; }
+.status-attention .progress-fill { background-color: #ffc107; }
+.status-critical .progress-fill, .status-overdue .progress-fill { background-color: #dc3545; }
+
+.modal {
+    display: none; /* Escondido por padrão */
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.6);
+    justify-content: center;
+    align-items: center;
+}
+
+.search-results { border: 1px solid #ddd; max-height: 150px; overflow-y: auto; background: #fff; position: absolute; z-index: 100; width: 100%; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: none; }
+        .search-results div { padding: 10px; cursor: pointer; border-bottom: 1px solid #f0f0f0; }
+        .search-results div:last-child { border-bottom: none; }
+        .search-results div:hover { background-color: #f8f9fa; }

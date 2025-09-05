@@ -388,3 +388,14 @@
         padding-bottom: 60px;
     }
 }
+
+/* Impede que a barra lateral apareça durante carregamentos de página */
+body {
+    transition: none !important;
+}
+
+/* Reativa as transições após o carregamento completo */
+body.loaded {
+    transition: all 0.3s ease-in-out !important;
+}
+

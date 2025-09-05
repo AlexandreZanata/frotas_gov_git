@@ -71,6 +71,42 @@
                         </div>
                     </div>
 
+                    <div class="form-group">
+                        <label for="category_id">
+                            Categoria *
+                            <?php if ($_SESSION['user_role_id'] == 1): // Apenas Admin pode gerenciar ?>
+                                <button type="button" id="addCategoryBtn" class="btn-add-inline" title="Adicionar Nova Categoria">+</button>
+                                <button type="button" id="editCategoryBtn" class="btn-add-inline" title="Editar Categoria Selecionada"><i class="fas fa-edit"></i></button>
+                                <button type="button" id="deleteCategoryBtn" class="btn-add-inline" title="Excluir Categoria Selecionada"><i class="fas fa-trash-alt"></i></button>
+                            <?php endif; ?>
+                        </label>
+                        <select id="category_id" name="category_id" required>
+                            <option value="">-- Selecione --</option>
+                            <?php foreach ($categories as $category): ?>
+                                <option value="<?php echo htmlspecialchars($category['id']); ?>">
+                                    <?php echo htmlspecialchars($category['name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div id="addCategoryContainer" class="form-group" style="display: none; border: 1px solid #ccc; padding: 1rem; border-radius: 8px; margin-top: -0.5rem;">
+                        <label for="newCategoryName">Nome da Nova Categoria</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="text" id="newCategoryName" style="flex-grow: 1;">
+                            <button type="button" id="saveCategoryBtn" class="btn-submit" style="padding: 0.5rem 1rem;">Salvar</button>
+                            <button type="button" id="cancelCategoryBtn" class="btn-submit" style="background-color: #6c757d; padding: 0.5rem 1rem;">Cancelar</button>
+                        </div>
+                    </div>
+
+                    <div id="addCategoryContainer" class="form-group" style="display: none; border: 1px solid #ccc; padding: 1rem; border-radius: 8px; margin-top: -0.5rem;">
+                        <label for="newCategoryName">Nome da Nova Categoria</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="text" id="newCategoryName" style="flex-grow: 1;">
+                            <button type="button" id="saveCategoryBtn" class="btn-submit" style="padding: 0.5rem 1rem;">Salvar</button>
+                            <button type="button" id="cancelCategoryBtn" class="btn-submit" style="background-color: #6c757d; padding: 0.5rem 1rem;">Cancelar</button>
+                        </div>
+                    </div>
+
 
                     <div class="form-row">
                         <div class="form-group">
@@ -107,44 +143,49 @@
                     </div>
                 </div>
 
-                <table class="user-table">
-                    <thead>
-                        <tr>
-                            <th>Nome / Modelo</th>
-                            <th>Prefixo</th>
-                            <th>Placa</th>
-                            <th>Status</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-<tbody id="vehicleTableBody">
-    <?php if (empty($initialVehicles['vehicles'])): ?>
+<table class="user-table">
+    <thead>
         <tr>
-            <td colspan="5" style="text-align: center;">Nenhum veículo encontrado.</td>
+            <th>Nome / Modelo</th>
+            <th>Prefixo</th>
+            <th>Placa</th>
+            <th>Categoria</th> <th>Status</th>
+            <th>Ações</th>
         </tr>
-    <?php else: ?>
-        <?php foreach ($initialVehicles['vehicles'] as $vehicle): ?>
-            <tr data-vehicle-id="<?php echo $vehicle['id']; ?>">
-                <td><?php echo htmlspecialchars($vehicle['name']); ?></td>
-                <td><?php echo htmlspecialchars($vehicle['prefix']); ?></td>
-                <td><?php echo htmlspecialchars($vehicle['plate']); ?></td>
-                <td>
-                    <span class="status-badge status-<?php echo strtolower($vehicle['status']); ?>">
-                        <?php 
-                            $statusMap = ['available' => 'Disponível', 'maintenance' => 'Manutenção', 'blocked' => 'Bloqueado'];
-                            echo $statusMap[$vehicle['status']] ?? 'Desconhecido';
-                        ?>
-                    </span>
-                </td>
-                <td class="actions">
-                    <a href="#" class="edit" title="Editar Veículo"><i class="fas fa-edit"></i></a>
-                    <a href="#" class="delete" title="Excluir Veículo"><i class="fas fa-trash-alt"></i></a>
-                </td>
-            </tr>
-        <?php endforeach; ?>
-    <?php endif; ?>
-</tbody>
-                </table>
+    </thead>
+    <tbody id="vehicleTableBody">
+        <?php if (empty($initialVehicles['vehicles'])): ?>
+            <tr>
+                <td colspan="6" style="text-align: center;">Nenhum veículo encontrado.</td> </tr>
+        <?php else: ?>
+            <?php foreach ($initialVehicles['vehicles'] as $vehicle): ?>
+                <tr data-vehicle-id="<?php echo $vehicle['id']; ?>">
+                    <td><?php echo htmlspecialchars($vehicle['name']); ?></td>
+                    <td><?php echo htmlspecialchars($vehicle['prefix']); ?></td>
+                    <td><?php echo htmlspecialchars($vehicle['plate']); ?></td>
+                    <td><?php echo htmlspecialchars($vehicle['category_name'] ?? 'N/A'); ?></td>
+                    <td>
+                        <span class="status-badge status-<?php echo strtolower($vehicle['status']); ?>">
+                            <?php 
+                                $statusMap = [
+                                    'available' => 'Disponível', 
+                                    'in_use' => 'Em Uso',
+                                    'maintenance' => 'Manutenção', 
+                                    'blocked' => 'Bloqueado'
+                                ];
+                                echo $statusMap[$vehicle['status']] ?? 'Desconhecido';
+                            ?>
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <a href="#" class="edit" title="Editar Veículo"><i class="fas fa-edit"></i></a>
+                        <a href="#" class="delete" title="Excluir Veículo"><i class="fas fa-trash-alt"></i></a>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </tbody>
+</table>
                 <div id="paginationContainer" class="pagination-wrapper">
                     <?php echo $initialVehicles['paginationHtml']; ?>
                 </div>
@@ -171,7 +212,26 @@
             </form>
         </div>
     </div>
-    
+    <div id="editCategoryModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Editar Categoria</h2>
+            <span class="modal-close" id="editCategoryModalClose">&times;</span>
+        </div>
+        <form id="editCategoryForm">
+            <div class="modal-body">
+                <input type="hidden" id="editCategoryId">
+                <div class="form-group">
+                    <label for="editCategoryName">Novo nome da categoria</label>
+                    <input type="text" id="editCategoryName" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn-modal btn-primary">Salvar Alterações</button>
+            </div>
+        </form>
+    </div>
+</div>
     <script>
         const BASE_URL = "<?php echo BASE_URL; ?>";
         // Passa o token para o JS para ser usado nas requisições AJAX
