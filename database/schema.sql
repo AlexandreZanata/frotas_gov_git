@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Sep 05, 2025 at 08:10 PM
+-- Generation Time: Sep 08, 2025 at 08:30 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -414,7 +414,9 @@ CREATE TABLE `vehicles` (
 
 CREATE TABLE `vehicle_categories` (
   `id` int(11) NOT NULL,
-  `name` varchar(50) NOT NULL
+  `name` varchar(50) NOT NULL,
+  `oil_change_km` int(11) NOT NULL DEFAULT 10000 COMMENT 'KM padrão para a troca de óleo',
+  `oil_change_days` int(11) NOT NULL DEFAULT 180 COMMENT 'Dias padrão para a troca de óleo'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------

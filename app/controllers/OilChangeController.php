@@ -245,4 +245,61 @@ class OilChangeController
         $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    // Adicione este método dentro da classe OilChangeController
+    public function getCategoryIntervals()
+    {
+        header('Content-Type: application/json');
+        if ($_SESSION['user_role_id'] != 1) {
+            echo json_encode(['success' => false, 'message' => 'Acesso negado.']);
+            return;
+        }
+
+        $categoryId = filter_input(INPUT_GET, 'category_id', FILTER_VALIDATE_INT);
+        $vehicleId = filter_input(INPUT_GET, 'vehicle_id', FILTER_VALIDATE_INT);
+
+        if (!$categoryId || !$vehicleId) {
+            echo json_encode(['success' => false, 'message' => 'ID da categoria ou do veículo não fornecido.']);
+            return;
+        }
+
+        try {
+            // Busca os dados da categoria
+            $stmt_cat = $this->conn->prepare("SELECT oil_change_km, oil_change_days FROM vehicle_categories WHERE id = ?");
+            $stmt_cat->execute([$categoryId]);
+            $category = $stmt_cat->fetch(PDO::FETCH_ASSOC);
+
+            // Busca a última troca e o KM atual do veículo
+            $stmt_vehicle = $this->conn->prepare(
+                "SELECT last_oil_change_km, 
+                       (SELECT r.end_km FROM runs r WHERE r.vehicle_id = v.id ORDER BY r.end_time DESC LIMIT 1) as current_km
+                FROM vehicles v WHERE v.id = ?"
+            );
+            $stmt_vehicle->execute([$vehicleId]);
+            $vehicle = $stmt_vehicle->fetch(PDO::FETCH_ASSOC);
+
+            if (!$category || !$vehicle) {
+                echo json_encode(['success' => false, 'message' => 'Dados da categoria ou veículo não encontrados.']);
+                return;
+            }
+            
+            // Calcula a próxima troca
+            $current_km = $vehicle['current_km'] ?? ($vehicle['last_oil_change_km'] ?? 0);
+            $next_km_calculated = $current_km + $category['oil_change_km'];
+            
+            $next_date_obj = new DateTime(); // Começa de hoje
+            $next_date_obj->add(new DateInterval("P{$category['oil_change_days']}D"));
+            $next_date_calculated = $next_date_obj->format('Y-m-d');
+
+            echo json_encode([
+                'success' => true,
+                'next_km' => $next_km_calculated,
+                'next_date' => $next_date_calculated
+            ]);
+
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Erro ao calcular intervalos: ' . $e->getMessage()]);
+        }
+    }
 }
