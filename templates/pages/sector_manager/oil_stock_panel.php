@@ -98,5 +98,7 @@
 </div>
     <script> const BASE_URL = "<?php echo BASE_URL; ?>"; </script>
     <script src="<?php echo BASE_URL; ?>/assets/js/manage_oil_stock.js"></script>
+    <script src="<?php echo BASE_URL; ?>/assets/js/dashboard.js" defer></script>
+    <script src="<?php echo BASE_URL; ?>/assets/js/admin_dashboard.js"></script>
 </body>
 </html>

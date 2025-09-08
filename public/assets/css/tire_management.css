@@ -1,0 +1,85 @@
+/* Estilos para o Módulo de Gestão de Pneus */
+
+/* KPIs específicos */
+.tire-kpis .kpi-card.critical { border-left: 5px solid #dc3545; }
+.tire-kpis .kpi-card.attention { border-left: 5px solid #ffc107; }
+.tire-kpis .kpi-card h3 { font-size: 1rem; }
+.tire-kpis .kpi-card .kpi-value { font-size: 2rem; }
+
+/* Ação na tabela de veículos */
+.actions a.manage-tires { color: #166534; /* Verde Escuro */ }
+.actions a.manage-tires:hover { color: #22c55e; /* Verde Claro */ }
+
+/* Modal e Diagrama */
+.modal-content.large { max-width: 800px; }
+#tire-actions { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #eee; }
+#tire-actions button { margin-right: 10px; }
+
+.tire-diagram {
+    display: grid;
+    padding: 20px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    background-color: #f8fafc;
+    margin: 0 auto;
+    max-width: 350px; /* Largura para caminhão toco */
+}
+
+.tire {
+    width: 60px;
+    height: 120px;
+    border: 3px solid #475569;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    cursor: pointer;
+    background-color: #fff;
+    transition: all 0.2s ease;
+    position: relative;
+}
+.tire:hover {
+    transform: scale(1.05);
+}
+.tire.selected {
+    background-color: #dbeafe;
+    border-color: #3b82f6;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+.tire .position-label { font-size: 0.8em; color: #64748b; }
+.tire .lifespan-bar {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    right: 5px;
+    height: 8px;
+    background-color: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.tire .lifespan-fill {
+    height: 100%;
+    border-radius: 4px;
+}
+.tire .lifespan-fill.good { background-color: #22c55e; } /* Verde */
+.tire .lifespan-fill.attention { background-color: #f59e0b; } /* Amarelo */
+.tire .lifespan-fill.critical { background-color: #ef4444; } /* Vermelho */
+
+/* Layout para Carro (2x2) */
+.tire-diagram.car {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 80px 50px;
+}
+
+/* Layout para Caminhão Toco (2x4) */
+.tire-diagram.truck_4x2 {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 120px 50px;
+    justify-items: center;
+}
+.tire[data-position^="rear_left"] { justify-self: end; }
+.tire[data-position^="rear_right"] { justify-self: start; }

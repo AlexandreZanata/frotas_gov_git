@@ -65,6 +65,7 @@
         <a href="<?php echo BASE_URL; ?>/dashboard" class="back-link">Voltar ao Painel</a>
         
     </div>
+        <script src="<?php echo BASE_URL; ?>/assets/js/dashboard.js" defer></script>
     <script src="<?php echo BASE_URL; ?>/assets/js/admin_dashboard.js"></script>
 </body>
 </html>

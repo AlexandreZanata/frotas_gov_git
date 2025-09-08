@@ -232,6 +232,29 @@
         </form>
     </div>
 </div>
+
+
+    <div id="deleteConfirmationModal" class="modal">
+        </div>
+
+    <div id="vehicleTireModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2 id="modalVehicleName">Gerenciar Pneus</h2>
+                <span class="modal-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="tire-diagram-container">
+                    </div>
+                <div id="tire-actions">
+                    <h4>Ações (selecione 2 pneus)</h4>
+                    <button data-action="rotate_internal" class="btn-secondary" disabled>Rodízio Interno</button>
+                    <button data-action="swap" class="btn-secondary" disabled>Trocar Pneus (do Estoque)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const BASE_URL = "<?php echo BASE_URL; ?>";
         // Passa o token para o JS para ser usado nas requisições AJAX

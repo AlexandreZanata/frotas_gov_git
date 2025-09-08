@@ -339,6 +339,7 @@
         const USER_ROLE = <?php echo $user_role; ?>;
     </script>
     <script src="<?php echo BASE_URL; ?>/assets/js/chat.js"></script>
+    <script src="<?php echo BASE_URL; ?>/assets/js/dashboard.js" defer></script>
     <script src="<?php echo BASE_URL; ?>/assets/js/admin_dashboard.js"></script>
 </body>
 </html>

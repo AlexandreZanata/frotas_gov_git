@@ -16,6 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const litersUsedInput = document.getElementById('litersUsed');
     const totalCostInput = document.getElementById('totalCost');
     const stockInfo = document.getElementById('stockInfo');
+    const categoryInfoDisplay = document.getElementById('categoryInfoDisplay');
+    const categoryId = document.getElementById('categoryId');
+    const currentKmInput = document.getElementById('currentKm');
 
     // --- ELEMENTOS DO MODAL DE EXCLUSÃO (PARA A PÁGINA DE CATEGORIAS) ---
     const deleteModal = document.getElementById('deleteConfirmationModal');
@@ -52,12 +55,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentKm = v.current_km ? parseInt(v.current_km).toLocaleString('pt-BR') : 'N/A';
         const nextKm = v.next_oil_change_km ? parseInt(v.next_oil_change_km).toLocaleString('pt-BR') : 'N/A';
         const nextDate = v.next_oil_change_date ? new Date(v.next_oil_change_date + 'T00:00:00').toLocaleDateString('pt-BR') : 'N/A';
+        const oilChangeKm = v.oil_change_km ? parseInt(v.oil_change_km).toLocaleString('pt-BR') : 'N/A';
 
         return `
             <div class="vehicle-card status-${v.status}" data-status="${v.status}" data-name="${v.name.toLowerCase()}" data-plate="${v.plate.toLowerCase()}" data-prefix="${v.prefix.toLowerCase()}">
                 <div class="card-header">
                     <h4>${v.name} (${v.prefix})</h4>
                     <span>Placa: ${v.plate} | KM Atual: ${currentKm}</span>
+                    <small>Categoria: ${v.category_name || 'Padrão'} (Troca a cada ${oilChangeKm} km)</small>
                 </div>
                 <div class="card-body">
                     <div class="progress-group">
@@ -146,13 +151,17 @@ document.addEventListener('DOMContentLoaded', () => {
             clearTimeout(debounce);
             const term = modalVehicleSearch.value.trim().toLowerCase();
             modalVehicleId.value = '';
+            categoryId.value = '';
+            categoryInfoDisplay.textContent = '';
             if (term.length < 2) {
                 modalVehicleResults.style.display = 'none';
                 return;
             }
             debounce = setTimeout(() => {
                 const filtered = allVehicles.filter(v => v.prefix.toLowerCase().includes(term) || v.plate.toLowerCase().includes(term));
-                modalVehicleResults.innerHTML = filtered.map(v => `<div data-id="${v.id}" data-text="${v.prefix} - ${v.plate}">${v.name} (${v.prefix})</div>`).join('');
+                modalVehicleResults.innerHTML = filtered.map(v => 
+                    `<div data-id="${v.id}" data-category="${v.category_id}" data-km="${v.current_km}" data-text="${v.prefix} - ${v.plate}">${v.name} (${v.prefix})</div>`
+                ).join('');
                 modalVehicleResults.style.display = 'block';
             }, 300);
         });
@@ -160,11 +169,43 @@ document.addEventListener('DOMContentLoaded', () => {
         modalVehicleResults.addEventListener('click', (e) => {
             const target = e.target.closest('div[data-id]');
             if (target) {
-                modalVehicleId.value = target.dataset.id;
+                const vehicleId = target.dataset.id;
+                const categoryIdValue = target.dataset.category;
+                const currentKm = target.dataset.km;
+                
+                modalVehicleId.value = vehicleId;
                 modalVehicleSearch.value = target.dataset.text;
+                if (currentKm) {
+                    currentKmInput.value = currentKm;
+                }
                 modalVehicleResults.style.display = 'none';
+                
+                // Buscar informações da categoria
+                if (categoryIdValue) {
+                    categoryId.value = categoryIdValue;
+                    fetchCategoryIntervals(vehicleId);
+                }
             }
         });
+    };
+
+    const fetchCategoryIntervals = async (vehicleId) => {
+        try {
+            const response = await fetch(`${BASE_URL}/sector-manager/oil-change/get-category-intervals?vehicle_id=${vehicleId}`);
+            if (!response.ok) throw new Error('Erro ao buscar intervalos da categoria');
+            
+            const data = await response.json();
+            if (data.success) {
+                const { category } = data;
+                categoryInfoDisplay.innerHTML = `
+                    <strong>Intervalos da categoria:</strong> 
+                    <span class="badge">${parseInt(category.oil_change_km).toLocaleString('pt-BR')} km</span> / 
+                    <span class="badge">${category.oil_change_days} dias</span>
+                `;
+            }
+        } catch (error) {
+        
+        }
     };
 
     const calculateCost = () => {
@@ -212,6 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
             modal.style.display = 'none';
             oilChangeForm.reset();
             stockInfo.textContent = ''; // Limpa a informação de estoque
+            categoryInfoDisplay.textContent = ''; // Limpa a informação da categoria
             fetchData(); // Atualiza a dashboard
 
         } catch (error) {

@@ -268,7 +268,8 @@ $router->post('sector-manager/categories/delete', 'VehicleCategoryController@del
 $router->get('sector-manager/oil-change/get-intervals', 'OilChangeController@getCategoryIntervals');
 
 $router->post('sector-manager/oil-change/update-interval', 'OilChangeController@updateChangeInterval');
-
+// Adicionado para troca de óleo baseada em categoria
+$router->get('/sector-manager/oil-change/get-category-intervals', 'OilChangeController@getCategoryIntervals');
 
 /*
 |--------------------------------------------------------------------------
@@ -278,6 +279,20 @@ $router->post('sector-manager/oil-change/update-interval', 'OilChangeController@
 $router->get('admin/settings', 'AdminSettingsController@index');
 $router->post('admin/settings/update', 'AdminSettingsController@update');
 
+
+/*
+|--------------------------------------------------------------------------
+| Rotas do Módulo de Pneus
+|--------------------------------------------------------------------------
+*/
+$router->get('tires/dashboard', 'TireController@dashboard');
+$router->get('tires/vehicles', 'TireController@vehicles');
+$router->get('tires/stock', 'TireController@stock');
+$router->post('tires/stock/store', 'TireController@storeTireInStock');
+
+// Endpoints AJAX para interatividade
+$router->post('tires/ajax/get-vehicle-layout', 'TireController@ajax_get_vehicle_layout');
+$router->post('tires/ajax/perform-action', 'TireController@ajax_perform_action');
 
 /*
 |--------------------------------------------------------------------------

@@ -122,6 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </td>
                 <td class="actions">
                     <a href="#" class="edit" title="Editar Veículo"><i class="fas fa-edit"></i></a>
+                    <a href="#" class="manage-tires" title="Gerenciar Pneus"><i class="fas fa-dot-circle"></i></a>
                     <a href="#" class="delete" title="Excluir Veículo"><i class="fas fa-trash-alt"></i></a>
                 </td>
             `;

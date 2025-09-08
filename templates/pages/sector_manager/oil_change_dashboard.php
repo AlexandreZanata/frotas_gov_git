@@ -7,6 +7,29 @@
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/admin_dashboard.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/oil_change.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background-color: #e2e8f0;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        #categoryInfoDisplay {
+            margin-top: 0.5rem;
+            color: #4a5568;
+        }
+        .category-details {
+            margin-top: 0.5rem;
+            font-size: 0.9em;
+            color: #4a5568;
+            background-color: #f8fafc;
+            border-left: 3px solid #3b82f6;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+        }
+    </style>
 </head>
 <body>
     <div class="overlay"></div>
@@ -97,7 +120,9 @@
                         <label for="modalVehicleSearch">Veículo*</label>
                         <input type="text" id="modalVehicleSearch" placeholder="Busque pelo prefixo ou placa..." required autocomplete="off">
                         <input type="hidden" id="modalVehicleId" name="vehicle_id">
+                        <input type="hidden" id="categoryId" name="category_id">
                         <div id="modalVehicleResults" class="search-results"></div>
+                        <div id="categoryInfoDisplay" class="category-details"></div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
@@ -162,6 +187,7 @@
         const BASE_URL = "<?php echo BASE_URL; ?>";
     </script>
     <script src="<?php echo BASE_URL; ?>/assets/js/oil_change.js"></script>
+    <script src="<?php echo BASE_URL; ?>/assets/js/dashboard.js" defer></script>
     <script src="<?php echo BASE_URL; ?>/assets/js/admin_dashboard.js"></script>
 </body>
 </html>

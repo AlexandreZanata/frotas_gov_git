@@ -87,6 +87,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <script src="<?php echo BASE_URL; ?>/assets/js/fuel_analysis.js"></script>
+    <script src="<?php echo BASE_URL; ?>/assets/js/dashboard.js" defer></script>
     <script src="<?php echo BASE_URL; ?>/assets/js/admin_dashboard.js"></script>
 
 </body>

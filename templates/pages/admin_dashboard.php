@@ -64,6 +64,11 @@
             </li>
             <?php endif; ?>
 
+
+            <li class="<?php echo (strpos($current_uri, 'tires') !== false) ? 'active' : ''; ?>">
+                <a href="<?php echo BASE_URL; ?>/tires/dashboard"><i class="fas fa-dot-circle"></i> Gestão de Pneus</a>
+            </li>
+
                 <li><a href="<?php echo BASE_URL; ?>/runs/new"><i class="fas fa-book"></i> Diário de Bordo</a></li>
 
                 <li><a href="/frotas-gov/public/logout"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
@@ -102,6 +107,7 @@
                     <p class="kpi-value"><?php echo $totalVehiclesInUse; ?></p>
                 </div>
             </a>
+            
             <a href="<?php echo BASE_URL; ?>/sector-manager/reports/fuel-analysis" class="kpi-card-link">
                 <div class="kpi-card">
                     <h3>Gasto com Combustível</h3>
