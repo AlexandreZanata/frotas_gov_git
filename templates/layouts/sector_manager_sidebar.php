@@ -73,7 +73,7 @@ $current_uri = $_SERVER['REQUEST_URI'];
             </li>
 
             <?php if (isset($_SESSION['user_role_id']) && in_array($_SESSION['user_role_id'], [1, 2])):?>
-            <li class="<?php echo (strpos($current_uri, 'oil-change') !== false) ? 'active' : ''; ?>">
+            <li class="<?php echo (strpos($current_uri, 'oil-change') !== false || strpos($current_uri, 'oil-stock') !== false) ? 'active' : ''; ?>">
                 <a href="<?php echo BASE_URL; ?>/sector-manager/oil-change"><i class="fas fa-oil-can"></i> Troca de Óleo</a>
             </li>
             <?php endif; ?>

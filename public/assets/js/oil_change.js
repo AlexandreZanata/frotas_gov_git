@@ -1,15 +1,39 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- ELEMENTOS PRINCIPAIS DA DASHBOARD ---
     const vehicleGrid = document.getElementById('vehicleGrid');
     const vehicleSearch = document.getElementById('vehicleSearch');
     const statusFilter = document.getElementById('statusFilter');
+
+    // --- ELEMENTOS DO MODAL DE REGISTRO ---
     const openModalBtn = document.getElementById('openRegisterModalBtn');
     const modal = document.getElementById('registerOilChangeModal');
     const closeModalBtn = modal.querySelector('.modal-close');
     const oilChangeForm = document.getElementById('oilChangeForm');
+    const modalVehicleSearch = document.getElementById('modalVehicleSearch');
+    const modalVehicleId = document.getElementById('modalVehicleId');
+    const modalVehicleResults = document.getElementById('modalVehicleResults');
+    const oilProductSelect = document.getElementById('oilProductId');
+    const litersUsedInput = document.getElementById('litersUsed');
+    const totalCostInput = document.getElementById('totalCost');
+    const stockInfo = document.getElementById('stockInfo');
+
+    // --- ELEMENTOS DO MODAL DE EXCLUSÃO (PARA A PÁGINA DE CATEGORIAS) ---
+    const deleteModal = document.getElementById('deleteConfirmationModal');
+    if (deleteModal) {
+        const deleteModalCloseBtn = deleteModal.querySelector('.modal-close');
+        const deleteForm = document.getElementById('deleteForm');
+        
+        // Evento para fechar modal de exclusão
+        deleteModalCloseBtn.addEventListener('click', () => deleteModal.style.display = 'none');
+        window.addEventListener('click', (e) => {
+            if (e.target === deleteModal) deleteModal.style.display = 'none';
+        });
+    }
 
     let allVehicles = []; // Cache para os dados dos veículos
 
-    // --- FUNÇÕES DE RENDERIZAÇÃO ---
+    // --- FUNÇÕES DE RENDERIZAÇÃO DA DASHBOARD ---
+
     const renderVehicleGrid = (vehicles) => {
         if (!vehicles || vehicles.length === 0) {
             vehicleGrid.innerHTML = '<p class="loading-message">Nenhum veículo encontrado.</p>';
@@ -82,25 +106,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- LÓGICA DE DADOS ---
+    // --- LÓGICA DE DADOS (AJAX) ---
     const fetchData = async () => {
         try {
             const response = await fetch(`${BASE_URL}/sector-manager/oil-change/ajax_get_vehicles`);
-            if (!response.ok) throw new Error('Erro ao buscar dados.');
+            if (!response.ok) throw new Error('Erro ao buscar dados dos veículos.');
             const data = await response.json();
             if (data.success) {
                 allVehicles = data.vehicles;
                 renderVehicleGrid(allVehicles);
                 updateStats(data.stats);
                 renderAlerts(data.alerts);
-                filterVehicles(); // Aplica filtros iniciais
+                filterVehicles(); 
             }
         } catch (error) {
             vehicleGrid.innerHTML = `<p class="loading-message" style="color: red;">${error.message}</p>`;
         }
     };
 
-    // --- FILTROS ---
+    // --- FILTROS DA DASHBOARD ---
     const filterVehicles = () => {
         const searchTerm = vehicleSearch.value.toLowerCase();
         const selectedStatus = statusFilter.value;
@@ -108,7 +132,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.vehicle-card').forEach(card => {
             const matchesSearch = card.dataset.name.includes(searchTerm) || card.dataset.plate.includes(searchTerm) || card.dataset.prefix.includes(searchTerm);
             const matchesStatus = selectedStatus === 'all' || card.dataset.status === selectedStatus;
-
             card.style.display = (matchesSearch && matchesStatus) ? 'flex' : 'none';
         });
     };
@@ -116,15 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
     vehicleSearch.addEventListener('input', filterVehicles);
     statusFilter.addEventListener('change', filterVehicles);
 
-    // --- LÓGICA DO MODAL ---
-    const modalVehicleSearch = document.getElementById('modalVehicleSearch');
-    const modalVehicleId = document.getElementById('modalVehicleId');
-    const modalVehicleResults = document.getElementById('modalVehicleResults');
-    const oilProductSelect = document.getElementById('oilProductId');
-    const litersUsedInput = document.getElementById('litersUsed');
-    const totalCostInput = document.getElementById('totalCost');
-    const stockInfo = document.getElementById('stockInfo');
-
+    // --- LÓGICA DO MODAL DE REGISTRO ---
     const setupAutocompleteModal = () => {
         let debounce;
         modalVehicleSearch.addEventListener('input', () => {
@@ -196,6 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alert(result.message);
             modal.style.display = 'none';
             oilChangeForm.reset();
+            stockInfo.textContent = ''; // Limpa a informação de estoque
             fetchData(); // Atualiza a dashboard
 
         } catch (error) {
@@ -204,6 +220,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- INICIALIZAÇÃO ---
-    fetchData();
-    setupAutocompleteModal();
+    if(vehicleGrid) { // Garante que o script só rode na página certa
+        fetchData();
+        setupAutocompleteModal();
+    }
 });

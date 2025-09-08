@@ -257,6 +257,18 @@ $router->post('sector-manager/oil-stock/store', 'OilChangeController@store_produ
 $router->get('sector-manager/oil-stock/get', 'OilChangeController@ajax_get_product');
 $router->post('sector-manager/oil-stock/delete', 'OilChangeController@delete_product');
 
+$router->get('sector-manager/oil-stock', 'OilStockController@index');
+$router->post('sector-manager/oil-stock/store', 'OilStockController@store');
+
+$router->post('sector-manager/oil-stock/delete', 'OilStockController@delete');
+$router->get('sector-manager/categories', 'VehicleCategoryController@index');
+$router->post('sector-manager/categories/store', 'VehicleCategoryController@store');
+$router->post('sector-manager/categories/delete', 'VehicleCategoryController@delete');
+// Adicionar esta rota junto com as outras de 'sector-manager'
+$router->get('sector-manager/oil-change/get-intervals', 'OilChangeController@getCategoryIntervals');
+
+$router->post('sector-manager/oil-change/update-interval', 'OilChangeController@updateChangeInterval');
+
 
 /*
 |--------------------------------------------------------------------------

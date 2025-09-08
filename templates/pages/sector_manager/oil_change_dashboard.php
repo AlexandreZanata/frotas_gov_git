@@ -58,9 +58,9 @@
                 <a href="<?php echo BASE_URL; ?>/sector-manager/oil-stock" class="btn-secondary" style="text-decoration: none;">
                     <i class="fas fa-box-open"></i> Gerenciar Estoque de Óleo
                 </a>
+            
+                <a href="<?php echo BASE_URL; ?>/sector-manager/categories" class="btn-history"><i class="fas fa-cogs"></i> Gerenciar Categorias</a>
             </div>
-
-
 
             <div class="controls-bar">
                 <div class="search-wrapper">
@@ -134,6 +134,25 @@
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn-primary">Salvar Registro</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="deleteConfirmationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="deleteModalTitle">Confirmar Exclusão</h2>
+                <span class="modal-close">&times;</span>
+            </div>
+            <form id="deleteForm" method="POST">
+                <div class="modal-body">
+                    <p>Tem certeza que deseja excluir a categoria <strong id="categoryNameToDelete"></strong>?</p>
+                    <p class="warning-text" style="color: #b91c1c;">Esta ação não pode ser desfeita e só funcionará se a categoria não estiver em uso.</p>
+                    <input type="hidden" name="category_id" id="categoryIdToDelete">
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn-modal btn-danger">Confirmar Exclusão</button>
                 </div>
             </form>
         </div>
