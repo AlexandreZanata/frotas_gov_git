@@ -12,9 +12,9 @@ class OilChangeController
     private $conn;
     private $currentUser;
 
-    // Definições para cálculo da próxima troca
-    private const KM_INTERVAL = 10000; // Próxima troca a cada 10.000 km
-    private const DAYS_INTERVAL = 180; // Próxima troca a cada 180 dias (6 meses)
+    // Removidas as constantes estáticas
+    // private const KM_INTERVAL = 10000;
+    // private const DAYS_INTERVAL = 180;
 
     public function __construct()
     {
@@ -35,9 +35,11 @@ class OilChangeController
     public function index()
     {
         $oilProducts = $this->getOilProducts();
+        $categories = $this->getVehicleCategories();
         
         $data = [
-            'oilProducts' => $oilProducts
+            'oilProducts' => $oilProducts,
+            'categories' => $categories
         ];
         
         extract($data);
@@ -69,10 +71,13 @@ class OilChangeController
         try {
             $baseQuery = "SELECT 
                             v.id, v.name, v.plate, v.prefix,
+                            v.category_id, vc.name as category_name,
+                            vc.oil_change_km, vc.oil_change_days,
                             v.last_oil_change_km, v.last_oil_change_date,
                             v.next_oil_change_km, v.next_oil_change_date,
                             (SELECT r.end_km FROM runs r WHERE r.vehicle_id = v.id ORDER BY r.end_time DESC LIMIT 1) as current_km
-                          FROM vehicles v";
+                          FROM vehicles v
+                          LEFT JOIN vehicle_categories vc ON v.category_id = vc.id";
 
             $params = [];
             if ($this->currentUser['role_id'] == 2) {
@@ -129,9 +134,16 @@ class OilChangeController
             
             $this->conn->beginTransaction();
 
-            $stmtVehicle = $this->conn->prepare("SELECT last_oil_change_km, current_secretariat_id FROM vehicles WHERE id = ?");
+            // Buscar informações do veículo e sua categoria
+            $stmtVehicle = $this->conn->prepare(
+                "SELECT v.last_oil_change_km, v.current_secretariat_id, v.category_id,
+                        vc.oil_change_km, vc.oil_change_days
+                 FROM vehicles v
+                 LEFT JOIN vehicle_categories vc ON v.category_id = vc.id
+                 WHERE v.id = ?"
+            );
             $stmtVehicle->execute([$vehicleId]);
-            $vehicle = $stmtVehicle->fetch();
+            $vehicle = $stmtVehicle->fetch(PDO::FETCH_ASSOC);
 
             $stmtOil = $this->conn->prepare("SELECT stock_liters, cost_per_liter FROM oil_products WHERE id = ?");
             $stmtOil->execute([$oilProductId]);
@@ -140,6 +152,10 @@ class OilChangeController
             if (!$vehicle || !$oil) throw new Exception("Veículo ou produto de óleo inválido.");
             if ($currentKm < ($vehicle['last_oil_change_km'] ?? 0)) throw new Exception("A quilometragem atual não pode ser menor que a da última troca.");
             if ($litersUsed > $oil['stock_liters']) throw new Exception("Estoque insuficiente para o óleo selecionado.");
+            
+            // Usar os valores da categoria para calcular a próxima troca
+            $kmInterval = $vehicle['oil_change_km'] ?? 10000; // Fallback para 10.000 km
+            $daysInterval = $vehicle['oil_change_days'] ?? 180; // Fallback para 180 dias
             
             $totalCost = $litersUsed * $oil['cost_per_liter'];
             $stmtStock = $this->conn->prepare("UPDATE oil_products SET stock_liters = stock_liters - ? WHERE id = ?");
@@ -154,8 +170,8 @@ class OilChangeController
                 $litersUsed, $totalCost, $currentKm, $notes
             ]);
             
-            $nextChangeDate = date('Y-m-d', strtotime("+" . self::DAYS_INTERVAL . " days"));
-            $nextChangeKm = $currentKm + self::KM_INTERVAL;
+            $nextChangeDate = date('Y-m-d', strtotime("+" . $daysInterval . " days"));
+            $nextChangeKm = $currentKm + $kmInterval;
 
             $stmtUpdateVehicle = $this->conn->prepare(
                 "UPDATE vehicles SET 
@@ -177,7 +193,6 @@ class OilChangeController
         }
     }
     
-
     private function getOilProducts()
     {
         $sql = "SELECT id, name, brand, stock_liters, cost_per_liter FROM oil_products";
@@ -215,8 +230,12 @@ class OilChangeController
 
         $kmRemaining = $vehicle['next_oil_change_km'] - $vehicle['current_km'];
 
-        $kmProgress = 100 - (($kmRemaining / self::KM_INTERVAL) * 100);
-        $daysProgress = 100 - (($daysRemaining / self::DAYS_INTERVAL) * 100);
+        // Usar os valores da categoria (ou fallback para valores padrão)
+        $kmInterval = $vehicle['oil_change_km'] ?? 10000;
+        $daysInterval = $vehicle['oil_change_days'] ?? 180;
+
+        $kmProgress = 100 - (($kmRemaining / $kmInterval) * 100);
+        $daysProgress = 100 - (($daysRemaining / $daysInterval) * 100);
 
         $kmProgress = max(0, min(100, $kmProgress));
         $daysProgress = max(0, min(100, $daysProgress));
@@ -246,11 +265,10 @@ class OilChangeController
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Adicione este método dentro da classe OilChangeController
     public function getCategoryIntervals()
     {
         header('Content-Type: application/json');
-        if ($_SESSION['user_role_id'] != 1) {
+        if ($_SESSION['user_role_id'] != 1 && $_SESSION['user_role_id'] != 2) {
             echo json_encode(['success' => false, 'message' => 'Acesso negado.']);
             return;
         }
@@ -258,41 +276,64 @@ class OilChangeController
         $categoryId = filter_input(INPUT_GET, 'category_id', FILTER_VALIDATE_INT);
         $vehicleId = filter_input(INPUT_GET, 'vehicle_id', FILTER_VALIDATE_INT);
 
-        if (!$categoryId || !$vehicleId) {
+        if (!$categoryId && !$vehicleId) {
             echo json_encode(['success' => false, 'message' => 'ID da categoria ou do veículo não fornecido.']);
             return;
         }
 
         try {
+            // Se veio apenas o vehicle_id, busca a categoria dele
+            if (!$categoryId && $vehicleId) {
+                $stmt = $this->conn->prepare("SELECT category_id FROM vehicles WHERE id = ?");
+                $stmt->execute([$vehicleId]);
+                $categoryId = $stmt->fetchColumn();
+                
+                if (!$categoryId) {
+                    echo json_encode(['success' => false, 'message' => 'Veículo não encontrado ou sem categoria definida.']);
+                    return;
+                }
+            }
+            
             // Busca os dados da categoria
             $stmt_cat = $this->conn->prepare("SELECT oil_change_km, oil_change_days FROM vehicle_categories WHERE id = ?");
             $stmt_cat->execute([$categoryId]);
             $category = $stmt_cat->fetch(PDO::FETCH_ASSOC);
 
-            // Busca a última troca e o KM atual do veículo
-            $stmt_vehicle = $this->conn->prepare(
-                "SELECT last_oil_change_km, 
-                       (SELECT r.end_km FROM runs r WHERE r.vehicle_id = v.id ORDER BY r.end_time DESC LIMIT 1) as current_km
-                FROM vehicles v WHERE v.id = ?"
-            );
-            $stmt_vehicle->execute([$vehicleId]);
-            $vehicle = $stmt_vehicle->fetch(PDO::FETCH_ASSOC);
+            // Busca a última troca e o KM atual do veículo (se foi fornecido um vehicle_id)
+            $vehicle = null;
+            if ($vehicleId) {
+                $stmt_vehicle = $this->conn->prepare(
+                    "SELECT last_oil_change_km, last_oil_change_date,
+                           (SELECT r.end_km FROM runs r WHERE r.vehicle_id = v.id ORDER BY r.end_time DESC LIMIT 1) as current_km
+                    FROM vehicles v WHERE v.id = ?"
+                );
+                $stmt_vehicle->execute([$vehicleId]);
+                $vehicle = $stmt_vehicle->fetch(PDO::FETCH_ASSOC);
+            }
 
-            if (!$category || !$vehicle) {
-                echo json_encode(['success' => false, 'message' => 'Dados da categoria ou veículo não encontrados.']);
+            if (!$category) {
+                echo json_encode(['success' => false, 'message' => 'Dados da categoria não encontrados.']);
                 return;
             }
             
-            // Calcula a próxima troca
-            $current_km = $vehicle['current_km'] ?? ($vehicle['last_oil_change_km'] ?? 0);
-            $next_km_calculated = $current_km + $category['oil_change_km'];
+            // Calcula a próxima troca se tiver os dados do veículo
+            $current_km = null;
+            $next_km_calculated = null;
+            $next_date_calculated = null;
             
-            $next_date_obj = new DateTime(); // Começa de hoje
-            $next_date_obj->add(new DateInterval("P{$category['oil_change_days']}D"));
-            $next_date_calculated = $next_date_obj->format('Y-m-d');
+            if ($vehicle) {
+                $current_km = $vehicle['current_km'] ?? ($vehicle['last_oil_change_km'] ?? 0);
+                $next_km_calculated = $current_km + $category['oil_change_km'];
+                
+                $next_date_obj = new DateTime($vehicle['last_oil_change_date'] ?? 'now'); // Começa da data da última troca ou hoje
+                $next_date_obj->add(new DateInterval("P{$category['oil_change_days']}D"));
+                $next_date_calculated = $next_date_obj->format('Y-m-d');
+            }
 
             echo json_encode([
                 'success' => true,
+                'category' => $category,
+                'current_km' => $current_km,
                 'next_km' => $next_km_calculated,
                 'next_date' => $next_date_calculated
             ]);
@@ -301,5 +342,11 @@ class OilChangeController
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => 'Erro ao calcular intervalos: ' . $e->getMessage()]);
         }
+    }
+
+    private function getVehicleCategories()
+    {
+        $stmt = $this->conn->query("SELECT id, name, oil_change_km, oil_change_days FROM vehicle_categories ORDER BY name ASC");
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

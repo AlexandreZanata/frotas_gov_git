@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Sep 08, 2025 at 08:30 PM
+-- Generation Time: Sep 08, 2025 at 09:37 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -360,6 +360,39 @@ CREATE TABLE `secretariats` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `tires`
+--
+
+CREATE TABLE `tires` (
+  `id` int(11) NOT NULL,
+  `dot` varchar(50) NOT NULL COMMENT 'Código DOT único do pneu',
+  `brand` varchar(100) NOT NULL COMMENT 'Marca do pneu',
+  `model` varchar(100) NOT NULL COMMENT 'Modelo do pneu',
+  `purchase_date` date DEFAULT NULL COMMENT 'Data da compra',
+  `status` enum('in_stock','in_use','recapping','discarded') NOT NULL DEFAULT 'in_stock',
+  `lifespan_percentage` tinyint(3) UNSIGNED NOT NULL DEFAULT 100 COMMENT 'Vida útil restante em %',
+  `secretariat_id` int(11) NOT NULL COMMENT 'Secretaria proprietária do pneu',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tire_events`
+--
+
+CREATE TABLE `tire_events` (
+  `id` int(11) NOT NULL,
+  `tire_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `event_type` enum('installation','rotation','swap_in','swap_out','recapping_sent','recapping_returned','discarded') NOT NULL,
+  `description` text DEFAULT NULL,
+  `event_date` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `users`
 --
 
@@ -417,6 +450,20 @@ CREATE TABLE `vehicle_categories` (
   `name` varchar(50) NOT NULL,
   `oil_change_km` int(11) NOT NULL DEFAULT 10000 COMMENT 'KM padrão para a troca de óleo',
   `oil_change_days` int(11) NOT NULL DEFAULT 180 COMMENT 'Dias padrão para a troca de óleo'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `vehicle_tires`
+--
+
+CREATE TABLE `vehicle_tires` (
+  `id` int(11) NOT NULL,
+  `vehicle_id` int(11) NOT NULL,
+  `tire_id` int(11) NOT NULL,
+  `position` varchar(50) NOT NULL COMMENT 'Ex: front_left, rear_right_inner',
+  `installed_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -620,6 +667,22 @@ ALTER TABLE `secretariats`
   ADD UNIQUE KEY `name` (`name`);
 
 --
+-- Indexes for table `tires`
+--
+ALTER TABLE `tires`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `dot` (`dot`),
+  ADD KEY `secretariat_id` (`secretariat_id`);
+
+--
+-- Indexes for table `tire_events`
+--
+ALTER TABLE `tire_events`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `tire_id` (`tire_id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -644,6 +707,14 @@ ALTER TABLE `vehicles`
 ALTER TABLE `vehicle_categories`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `name` (`name`);
+
+--
+-- Indexes for table `vehicle_tires`
+--
+ALTER TABLE `vehicle_tires`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `vehicle_position` (`vehicle_id`,`position`),
+  ADD KEY `tire_id` (`tire_id`);
 
 --
 -- Indexes for table `vehicle_transfers`
@@ -793,6 +864,18 @@ ALTER TABLE `secretariats`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `tires`
+--
+ALTER TABLE `tires`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `tire_events`
+--
+ALTER TABLE `tire_events`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
@@ -808,6 +891,12 @@ ALTER TABLE `vehicles`
 -- AUTO_INCREMENT for table `vehicle_categories`
 --
 ALTER TABLE `vehicle_categories`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `vehicle_tires`
+--
+ALTER TABLE `vehicle_tires`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
@@ -942,6 +1031,19 @@ ALTER TABLE `scheduled_messages`
   ADD CONSTRAINT `scheduled_messages_ibfk_1` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
+-- Constraints for table `tires`
+--
+ALTER TABLE `tires`
+  ADD CONSTRAINT `tires_ibfk_1` FOREIGN KEY (`secretariat_id`) REFERENCES `secretariats` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `tire_events`
+--
+ALTER TABLE `tire_events`
+  ADD CONSTRAINT `tire_events_ibfk_1` FOREIGN KEY (`tire_id`) REFERENCES `tires` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `tire_events_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `users`
 --
 ALTER TABLE `users`
@@ -954,6 +1056,13 @@ ALTER TABLE `users`
 --
 ALTER TABLE `vehicles`
   ADD CONSTRAINT `vehicles_ibfk_1` FOREIGN KEY (`current_secretariat_id`) REFERENCES `secretariats` (`id`);
+
+--
+-- Constraints for table `vehicle_tires`
+--
+ALTER TABLE `vehicle_tires`
+  ADD CONSTRAINT `vehicle_tires_ibfk_1` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `vehicle_tires_ibfk_2` FOREIGN KEY (`tire_id`) REFERENCES `tires` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `vehicle_transfers`
