@@ -19,7 +19,6 @@
             </a>
         </header>
         <div class="content-body">
-            <!-- Formulário no Topo (Restaurado) -->
             <div class="form-container">
                 <h2 class="section-title">Definir/Editar Regra de Vida Útil</h2>
                 <form id="tireRuleForm" action="<?php echo BASE_URL; ?>/tires/settings/store" method="POST">
@@ -41,7 +40,6 @@
                 </form>
             </div>
 
-            <!-- Tabela Principal de Gerenciamento -->
             <div class="table-container">
                  <div class="section-header">
                     <h2 class="section-title">Regras e Layouts por Categoria</h2>
@@ -77,7 +75,6 @@
         </div>
     </main>
     
-    <!-- Modal para ASSOCIAÇÃO de Layout -->
     <div id="layoutAssocModal" class="modal">
         <div class="modal-content large">
             <div class="modal-header">
@@ -91,7 +88,6 @@
         </div>
     </div>
 
-    <!-- Modal para GERENCIAR Layouts -->
     <div id="layoutManagerModal" class="modal">
         <div class="modal-content large">
             <div class="modal-header"><h2 class="section-title">Gerenciador de Layouts</h2><span class="modal-close">&times;</span></div>
@@ -104,10 +100,10 @@
                         <input type="hidden" id="layoutId" name="id">
                         <div class="form-row">
                             <div class="form-group"><label for="layoutName">Nome Descritivo*</label><input type="text" id="layoutName" name="name" required></div>
-                            <div class="form-group"><label for="layoutKey">Chave Única*</label><input type="text" id="layoutKey" name="layout_key" required></div>
+                            <div class="form-group"><label for="layoutKey">Chave Única*</label><input type="text" id="layoutKey" name="layout_key" required placeholder="Ex: CAR_2X2, MOTO_1X1"></div>
                         </div>
                         <div class="form-group">
-                            <label for="layoutPositions">Posições dos Pneus*</label>
+                            <label for="layoutPositions">Posições dos Pneus* (separadas por vírgula)</label>
                             <div id="positionButtons" class="position-buttons-container">
                                 <button type="button" class="btn-position" data-position="front_left">Diant. Esq.</button>
                                 <button type="button" class="btn-position" data-position="front_right">Diant. Dir.</button>
@@ -117,7 +113,7 @@
                                 <button type="button" class="btn-position" data-position="rear_right_inner">Tras. Dir. Int.</button>
                                 <button type="button" class="btn-position" data-position="steer">Estepe</button>
                             </div>
-                            <textarea id="layoutPositions" name="positions" rows="3" required placeholder="Clique nos botões ou digite as posições (separadas por vírgula)..."></textarea>
+                            <textarea id="layoutPositions" name="positions" rows="3" required placeholder="Ex: front_left, front_right, rear_left, rear_right..."></textarea>
                         </div>
                         <div class="form-actions">
                             <button type="submit" class="btn-submit">Salvar Layout</button>

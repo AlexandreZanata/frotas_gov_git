@@ -88,6 +88,22 @@
             </div>
         </div>
     </div>
+
+        <!-- NOVO Modal para Instalação de Pneus -->
+    <div id="installTireModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Selecionar Pneu do Estoque</h2>
+                <span class="modal-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="stock-search-input" placeholder="Buscar por DOT, marca ou modelo..." class="form-control" style="margin-bottom: 1rem;">
+                <div id="stock-tire-list" class="stock-tire-list">
+                    <!-- Pneus do estoque serão carregados aqui -->
+                </div>
+            </div>
+        </div>
+    </div>
     
     <script>const BASE_URL = "<?php echo BASE_URL; ?>";</script>
     <script src="<?php echo BASE_URL; ?>/assets/js/tire_management.js"></script>

@@ -1,30 +1,15 @@
-/* Estilos para o Módulo de Gestão de Pneus */
+/* public/assets/css/tire_management.css */
 
-/* KPIs específicos */
+/* --- ESTILOS GERAIS DO MÓDULO --- */
 .tire-kpis .kpi-card.critical { border-left: 5px solid #dc3545; }
 .tire-kpis .kpi-card.attention { border-left: 5px solid #ffc107; }
-.tire-kpis .kpi-card h3 { font-size: 1rem; }
-.tire-kpis .kpi-card .kpi-value { font-size: 2rem; }
-
-/* Ação na tabela de veículos */
-.actions a.manage-tires { color: #166534; /* Verde Escuro */ }
-.actions a.manage-tires:hover { color: #22c55e; /* Verde Claro */ }
-
-/* Modal e Diagrama */
+.actions a.manage-tires { color: #166534; }
+.actions a.manage-tires:hover { color: #22c55e; }
 .modal-content.large { max-width: 800px; }
 #tire-actions { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #eee; }
 #tire-actions button { margin-right: 10px; }
 
-.tire-diagram {
-    display: grid;
-    padding: 20px;
-    border: 2px solid #e2e8f0;
-    border-radius: 10px;
-    background-color: #f8fafc;
-    margin: 0 auto;
-    max-width: 350px; /* Largura para caminhão toco */
-}
-
+/* --- ESTILO BASE DO PNEU (VISUALIZAÇÃO COMPLETA NO DASHBOARD) --- */
 .tire {
     width: 60px;
     height: 120px;
@@ -39,10 +24,9 @@
     background-color: #fff;
     transition: all 0.2s ease;
     position: relative;
+    grid-area: var(--position, auto);
 }
-.tire:hover {
-    transform: scale(1.05);
-}
+.tire:hover { transform: scale(1.05); }
 .tire.selected {
     background-color: #dbeafe;
     border-color: #3b82f6;
@@ -50,134 +34,80 @@
 }
 .tire .position-label { font-size: 0.8em; color: #64748b; }
 .tire .lifespan-bar {
-    position: absolute;
-    bottom: 5px;
-    left: 5px;
-    right: 5px;
-    height: 8px;
-    background-color: #e2e8f0;
-    border-radius: 4px;
-    overflow: hidden;
+    position: absolute; bottom: 5px; left: 5px; right: 5px;
+    height: 8px; background-color: #e2e8f0; border-radius: 4px; overflow: hidden;
 }
-.tire .lifespan-fill {
-    height: 100%;
-    border-radius: 4px;
-}
-.tire .lifespan-fill.good { background-color: #22c55e; } /* Verde */
-.tire .lifespan-fill.attention { background-color: #f59e0b; } /* Amarelo */
-.tire .lifespan-fill.critical { background-color: #ef4444; } /* Vermelho */
+.tire .lifespan-fill { height: 100%; border-radius: 4px; }
+.tire .lifespan-fill.good { background-color: #22c55e; }
+.tire .lifespan-fill.attention { background-color: #f59e0b; }
+.tire .lifespan-fill.critical { background-color: #ef4444; }
 
-/* Layout para Carro (2x2) */
-.tire-diagram.car {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto;
-    gap: 80px 50px;
-}
-
-/* Layout para Caminhão Toco (2x4) */
-.tire-diagram.truck_4x2 {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto;
-    gap: 120px 50px;
-    justify-items: center;
-}
-.tire[data-position^="rear_left"] { justify-self: end; }
-.tire[data-position^="rear_right"] { justify-self: start; }
-
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-}
-
-.btn-action-table {
-    background: none; border: 1px solid #cbd5e1; padding: 5px 10px;
-    border-radius: 5px; cursor: pointer; display: inline-flex;
-    align-items: center; gap: 5px; font-weight: 600;
-}
-.btn-action-table:hover { background-color: #f1f5f9; }
-
-.badge-layout {
-    background-color: #e0e7ff; color: #4338ca; padding: 3px 8px;
-    border-radius: 4px; font-size: 0.8em; font-family: monospace;
-}
-
-td.editable { cursor: pointer; position: relative; }
-td.editable:hover::after {
-    content: '\f044'; /* Ícone de lápis do FontAwesome */
-    font-family: 'Font Awesome 6 Free';
-    font-weight: 900;
-    margin-left: 8px;
-    color: var(--primary-color);
-}
-
-.position-buttons-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 10px;
-}
-
-.btn-position {
-    background-color: #f1f5f9;
-    color: #475569;
-    border: 1px solid #e2e8f0;
-    padding: 6px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.2s ease;
-}
-
-.btn-position:hover {
-    background-color: #e2e8f0;
-    border-color: #cbd5e1;
-}
-
-/* --- Lógica de Layout Espacial com Grid Areas --- */
-
-.tire-diagram {
+/* --- BIBLIOTECA DE DIAGRAMAS DE PNEUS (PARA DASHBOARD E PREVIEW) --- */
+.tire-diagram, .tire-diagram-preview {
     display: grid;
-    gap: 15px 30px; /* Espaçamento padrão entre pneus */
+    gap: 15px 30px;
     justify-content: center;
     align-content: center;
     padding: 20px;
-    min-height: 300px;
+    min-height: 250px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    background-color: #f8fafc;
+    margin: 0 auto;
+    max-width: 500px;
 }
 
-/* Define a área de cada pneu com base no seu data-position */
-.tire[data-position="front_left"] { grid-area: fl; }
-.tire[data-position="front_right"] { grid-area: fr; }
-.tire[data-position="rear_left"] { grid-area: rl; }
-.tire[data-position="rear_right"] { grid-area: rr; }
-.tire[data-position="rear_left_outer"] { grid-area: rlo; }
-.tire[data-position="rear_left_inner"] { grid-area: rli; }
-.tire[data-position="rear_right_outer"] { grid-area: rro; }
-.tire[data-position="rear_right_inner"] { grid-area: rri; }
-.tire[data-position="steer"] { grid-area: steer; }
-/* Adicione outras posições aqui se necessário */
-
-/* Define o "desenho" espacial para cada layout */
-.tire-diagram[data-layout-key="car_2x2"] {
-    grid-template-columns: 1fr 1fr;
-    grid-template-areas:
-        "fl fr"
-        "rl rr";
-}
-
-.tire-diagram[data-layout-key="truck_4x2"] {
-    grid-template-columns: 1fr 1fr;
-    grid-template-areas:
-        "fl fr"
-        "rlo rro"
-        "rli rri";
-}
-
-.tire-diagram[data-layout-key="moto_1x1"] {
+/* --- Veículos de 2 Eixos --- */
+.tire-diagram[data-layout-key="MOTO_1X1"], .tire-diagram-preview[data-layout-key="MOTO_1X1"] {
     grid-template-columns: 1fr;
-    justify-items: center; /* Centraliza os pneus na coluna */
-    grid-template-areas:
-        "fl"
-        "rl"; /* Usando front_left e rear_left como padrão para moto */
+    justify-items: center; gap: 40px;
+    grid-template-areas: "fl" "rl";
+}
+.tire-diagram[data-layout-key="CAR_2X2"], .tire-diagram-preview[data-layout-key="CAR_2X2"] {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "fl fr" "rl rr";
+}
+.tire-diagram[data-layout-key="TRUCK_4X2"], .tire-diagram-preview[data-layout-key="TRUCK_4X2"] {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "fl fr" "rli rri" "rlo rro";
+}
+/* --- VERSÕES COM ESTEPE --- */
+.tire-diagram[data-layout-key="CAR_2X2_STEER"], .tire-diagram-preview[data-layout-key="CAR_2X2_STEER"] {
+    grid-template-columns: 1fr 1fr auto;
+    align-items: center;
+    grid-template-areas: "fl fr ." ". steer ." "rl rr .";
+}
+.tire-diagram[data-layout-key="TRUCK_4X2_STEER"], .tire-diagram-preview[data-layout-key="TRUCK_4X2_STEER"] {
+    grid-template-columns: 1fr 1fr auto;
+    align-items: center;
+    grid-template-areas: "fl fr ." "rli rri steer" "rlo rro .";
+}
+
+/* --- ESTILOS PARA MODAL DE ASSOCIAÇÃO --- */
+.layout-selector {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+.layout-option {
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.layout-option:hover { border-color: #94a3b8; }
+.layout-option.selected {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(12, 74, 110, 0.2);
+    background-color: #f0f9ff;
+}
+.tire-preview {
+    width: 20px; 
+    height: 40px; 
+    border: 2px solid #94a3b8;
+    border-radius: 4px; 
+    background-color: #e2e8f0;
+    grid-area: var(--position);
 }

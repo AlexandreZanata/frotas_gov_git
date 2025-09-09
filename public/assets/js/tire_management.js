@@ -19,8 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const vehicleRow = manageButton.closest('tr');
             currentVehicleId = vehicleRow.dataset.vehicleId;
-            const vehicleName = vehicleRow.cells[2].textContent; // Coluna Nome/Modelo
-            const vehiclePrefix = vehicleRow.cells[0].textContent; // Coluna Prefixo
+            const vehicleName = vehicleRow.cells[2].textContent;
+            const vehiclePrefix = vehicleRow.cells[0].textContent;
             
             modalVehicleName.textContent = `Gerenciar Pneus: ${vehiclePrefix} - ${vehicleName}`;
             openVehicleModal(currentVehicleId);
@@ -41,7 +41,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await response.json();
             if (data.success) {
-                renderTireDiagram(data.layoutConfig, data.tires || []);
+                // Passa a chave do layout para a função de renderização
+                renderTireDiagram(data.layoutKey, data.layoutConfig, data.tires || []);
             } else {
                 diagramContainer.innerHTML = `<p class="error">${data.message || 'Erro ao carregar.'}</p>`;
             }
@@ -50,56 +51,84 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-// Substitua a função renderTireDiagram existente por esta
-    function renderTireDiagram(layoutConfig, tires) {
-        diagramContainer.innerHTML = ''; // Limpa o conteúdo anterior
-        if (!layoutConfig || !layoutConfig.positions || layoutConfig.positions.length === 0) {
-            diagramContainer.innerHTML = '<p class="error">Configuração de layout inválida ou não encontrada para este veículo.</p>';
-            return;
-        }
+// Dentro de public/assets/js/tire_management.js
 
-        const diagram = document.createElement('div');
-        diagram.className = 'tire-diagram';
-
-        // Aplica estilos CSS customizados vindos do banco de dados, se existirem
-        if (layoutConfig.css) {
-            Object.assign(diagram.style, layoutConfig.css);
-        }
-
-        const tireMap = new Map(tires.map(t => [t.position, t]));
-        
-        // Cria um elemento de pneu para cada posição definida no layout
-        layoutConfig.positions.forEach(pos => {
-            const tireData = tireMap.get(pos);
-            const tireEl = document.createElement('div');
-            tireEl.className = 'tire';
-            tireEl.dataset.position = pos;
-            if (tireData) {
-                tireEl.dataset.tireId = tireData.tire_id;
-            }
-
-            let lifespanClass = 'good';
-            if (tireData) {
-                if (tireData.lifespan <= 20) lifespanClass = 'critical';
-                else if (tireData.lifespan <= 40) lifespanClass = 'attention';
-            }
-
-            tireEl.innerHTML = `
-                <span class="position-label">${pos.replace(/_/g, ' ').toUpperCase()}</span>
-                <strong>${tireData ? tireData.dot : 'VAZIO'}</strong>
-                ${tireData ? `<div class="lifespan-bar"><div class="lifespan-fill ${lifespanClass}" style="width: ${tireData.lifespan}%;"></div></div>` : ''}
-            `;
-            diagram.appendChild(tireEl);
-            tireEl.addEventListener('click', handleTireClick);
-        });
-
-        diagramContainer.appendChild(diagram);
+function renderTireDiagram(layoutKey, layoutConfig, tires) {
+    diagramContainer.innerHTML = '';
+    if (!layoutConfig || !layoutConfig.axles) {
+        diagramContainer.innerHTML = '<p class="error">Configuração de layout inválida.</p>';
+        return;
     }
+
+    const diagram = document.createElement('div');
+    diagram.className = 'tire-diagram';
+    diagram.dataset.layoutKey = layoutKey; // Para o CSS geral, se houver
+
+    const maxColumns = layoutConfig.axles.reduce((max, axle) => Math.max(max, axle.tires.length), 0);
+    const hasSpare = layoutConfig.spare && layoutConfig.spare.length > 0;
+
+    // --- Lógica para gerar Grid CSS dinamicamente ---
+    let gridTemplateAreas = '';
+    const allPositions = [];
+
+    // Eixos dianteiros
+    layoutConfig.axles.filter(a => a.type === 'front').forEach(axle => {
+        gridTemplateAreas += `"${axle.tires.join(' ')}"\n`;
+        allPositions.push(...axle.tires);
+    });
+
+    // Estepe (se houver)
+    if (hasSpare) {
+        const sparePos = layoutConfig.spare[0];
+        allPositions.push(sparePos);
+        let spareRow = `"${'. '.repeat(Math.floor(maxColumns / 2))}${sparePos}${' .'.repeat(Math.ceil(maxColumns / 2) -1)}"`;
+        gridTemplateAreas += `${spareRow}\n`;
+    }
+
+    // Eixos traseiros
+    layoutConfig.axles.filter(a => a.type === 'rear').forEach(axle => {
+        gridTemplateAreas += `"${axle.tires.join(' ')}"\n`;
+        allPositions.push(...axle.tires);
+    });
+
+    diagram.style.gridTemplateAreas = gridTemplateAreas;
+    diagram.style.gridTemplateColumns = `repeat(${maxColumns}, auto)`;
+
+    // --- Renderiza os Pneus ---
+    const tireMap = new Map(tires.map(t => [t.position, t]));
+    allPositions.forEach(pos => {
+        const tireData = tireMap.get(pos);
+        const tireEl = document.createElement('div');
+        tireEl.className = 'tire';
+        tireEl.dataset.position = pos;
+        if (tireData) {
+            tireEl.dataset.tireId = tireData.tire_id;
+        }
+
+        let lifespanClass = 'good';
+        if (tireData && tireData.lifespan) {
+            if (tireData.lifespan <= 20) lifespanClass = 'critical';
+            else if (tireData.lifespan <= 40) lifespanClass = 'attention';
+        }
+
+        tireEl.innerHTML = `
+            <span class="position-label">${pos.replace(/_/g, ' ').toUpperCase()}</span>
+            <strong>${tireData ? tireData.dot : 'VAZIO'}</strong>
+            ${tireData ? `<div class="lifespan-bar"><div class="lifespan-fill ${lifespanClass}" style="width: ${tireData.lifespan}%;"></div></div>` : ''}
+        `;
+        diagram.appendChild(tireEl);
+        tireEl.addEventListener('click', handleTireClick);
+    });
+
+    diagramContainer.appendChild(diagram);
+}
 
     function handleTireClick(e) {
         const tireEl = e.currentTarget;
         const position = tireEl.dataset.position;
-        if (!tireEl.dataset.tireId) return;
+        // Só permite selecionar pneus que existem
+        if (!tireEl.dataset.tireId) return; 
+        
         tireEl.classList.toggle('selected');
         
         const index = selectedTires.indexOf(position);
@@ -145,7 +174,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await response.json();
                 if(result.success) {
                     alert(result.message);
-                    openVehicleModal(currentVehicleId);
+                    // Recarrega o modal para mostrar o resultado da ação
+                    openVehicleModal(currentVehicleId); 
                 } else {
                     alert(`Erro: ${result.message}`);
                 }

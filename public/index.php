@@ -303,6 +303,9 @@ $router->post('tires/ajax/delete-layout', 'TireController@ajax_delete_layout');
 $router->post('tires/ajax/update-category-layout', 'TireController@ajax_update_category_layout');
 $router->get('tires/ajax_get_rule_details', 'TireController@ajax_get_rule_details');
 
+// Adicionar em public/index.php
+$router->get('tires/ajax/get-stock-tires', 'TireController@ajax_get_stock_tires');
+
 /*
 |--------------------------------------------------------------------------
 | Processamento da requisição
