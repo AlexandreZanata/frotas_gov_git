@@ -1,3 +1,33 @@
+/* Adicione estas regras ao seu arquivo sidebar-layout.css */
+
+/* Melhora a transição da barra lateral para evitar "piscar" */
+.sidebar-nav {
+    /* Mantenha as propriedades existentes */
+    flex-grow: 1;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    
+    /* Adicione estas propriedades para suavizar transições */
+    scroll-behavior: auto; /* Evita animação de scroll que pode causar piscar */
+    will-change: scroll-position; /* Otimização para o navegador */
+    backface-visibility: hidden; /* Reduz cintilação em alguns navegadores */
+    -webkit-overflow-scrolling: touch; /* Melhora desempenho em dispositivos iOS */
+}
+
+/* Opcional: se ainda houver piscar, esta classe pode ser aplicada durante o carregamento da página */
+.sidebar-loading {
+    visibility: hidden;
+    opacity: 0;
+}
+
+.sidebar-loaded {
+    visibility: visible;
+    opacity: 1;
+    transition: opacity 0.1s ease-out;
+}
+
+
 :root {
     --primary-color: #0c4a6e;
     --accent-color: #38bdf8;
@@ -181,3 +211,13 @@ body.sidebar-collapsed .main-content { margin-left: 0; width: 100%; }
     background-color: var(--primary-color);
     color: #fff;
 }
+
+
+/* Adições ao CSS para evitar o efeito de piscar */
+html.no-transitions *,
+html.no-transitions *::before,
+html.no-transitions *::after {
+    transition: none !important;
+    animation: none !important;
+}
+

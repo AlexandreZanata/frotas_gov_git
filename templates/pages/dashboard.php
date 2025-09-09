@@ -1,98 +1,93 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Frotas Gov</title>
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/dashboard.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <title>Painel - Gestão de Pneus</title>
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/admin_dashboard.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/manage_users.css"> <!-- Para estilo da tabela -->
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/tire_management.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
 <body>
-    <div class="overlay"></div>
-
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <h2>Frotas Gov</h2>
-        </div>
-        <nav class="sidebar-nav">
-            <ul>
-                <li><a href="#" class="active"><i class="fas fa-tachometer-alt"></i> Painel</a></li>
-
-            <li class="<?php echo (strpos($current_uri, 'profile') !== false) ? 'active' : ''; ?>">
-                <a href="<?php echo BASE_URL; ?>/profile"><i class="fas fa-user-circle"></i> Meu Perfil</a>
-            </li>
-                
-            <?php if ($_SESSION['user_role_id'] == 4): ?>
-            <li class="<?php echo (strpos($current_uri, 'runs/history') !== false) ? 'active' : ''; ?>">
-                <a href="<?php echo BASE_URL; ?>/runs/history"><i class="fas fa-road"></i> Minhas Corridas</a>
-            </li>
-            <?php endif; ?>
-            <li class="<?php echo (strpos($current_uri, 'chat') !== false) ? 'active' : ''; ?>">
-                <a href="<?php echo BASE_URL; ?>/chat"><i class="fas fa-comments"></i> Chat</a>
-            </li>
-
-            <li class="<?php echo (strpos($current_uri, 'transfers') !== false) ? 'active' : ''; ?>">
-                <a href="<?php echo BASE_URL; ?>/transfers"><i class="fas fa-exchange-alt"></i> Transferências</a>
-            </li>
-
-            <li><a href="<?php echo BASE_URL; ?>/runs/new"><i class="fas fa-book"></i> Diário de Bordo</a></li>
-                <li><a href="/frotas-gov/public/logout"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
-            </ul>
-        </nav>
-    </aside>
-
+    <?php include_once __DIR__ . '/../../layouts/sector_manager_sidebar.php'; ?>
     <main class="main-content">
-        <header class="mobile-header">
-            <button id="menu-toggle" aria-label="Abrir menu" aria-expanded="false">
-                <i class="fas fa-bars"></i>
-            </button>
-            <h2>Painel</h2>
-            <button id="menu-toggle"><i class="fas fa-bars"></i></button>
-        </header>
-
         <header class="header">
-            <h1>Painel de Controle</h1>
-            <button id="desktop-menu-toggle" class="menu-toggle-btn" aria-label="Alternar menu" aria-expanded="true">
-                <i class="fas fa-bars"></i>
-            </button>
-            <div class="user-info">
-                <span>Olá, <?php echo htmlspecialchars($_SESSION['user_name']); ?>!</span>
+            <h1>Painel de Gestão de Pneus</h1>
+            <div class="header-actions">
+                <a href="<?php echo BASE_URL; ?>/tires/stock" class="btn-history">
+                    <i class="fas fa-box-open"></i> Estoque
+                </a>
+                <?php if ($_SESSION['user_role_id'] == 1): ?>
+                <a href="<?php echo BASE_URL; ?>/tires/settings" class="btn-history">
+                    <i class="fas fa-cog"></i> Configurações
+                </a>
+                <?php endif; ?>
             </div>
         </header>
-        
-        <section class="desktop-cards">
-            <div class="desktop-card">
-                <h3>Veículo Atual</h3>
-                <p>Nenhum veículo em uso no momento.</p>
-            </div>
-            <div class="desktop-card">
-                <h3>Minhas Corridas</h3>
-                <p>Veja seu histórico completo.</p>
-                <a href="<?php echo BASE_URL; ?>/runs/history" style="font-weight: bold; color: var(--primary-color);">Ver Histórico</a>
-            </div>
-            <div class="desktop-card">
-                <h3>Notificações</h3>
-                <p>Nenhuma nova notificação.</p>
-            </div>
-        </section>
 
-        <section class="mobile-buttons">
-            <a href="<?php echo BASE_URL; ?>/runs/new" class="mobile-button" style="text-decoration: none;">
-                <h3><i class="fas fa-book"></i> Iniciar Diário</h3>
-                <p>Registrar uma nova corrida.</p>
-            </a>
-            <a href="<?php echo BASE_URL; ?>/runs/history" class="mobile-button" style="text-decoration: none;">
-                <h3><i class="fas fa-road"></i> Minhas Corridas</h3>
-                <p>Acesse seu histórico de viagens.</p>
-            </a>
-            <button class="mobile-button">
-                <h3>Notificações</h3>
-                <p>Nenhuma nova notificação.</p>
-            </button>
-        </section>
+        <div class="content-body">
+            <!-- KPIs (Cards de Resumo) -->
+            <section class="kpi-grid tire-kpis">
+                <div class="kpi-card critical"><p class="kpi-value"><?php echo $criticalTires; ?></p><h3>Pneus Críticos (≤20%)</h3></div>
+                <div class="kpi-card attention"><p class="kpi-value"><?php echo $attentionTires; ?></p><h3>Pneus em Atenção (≤40%)</h3></div>
+                <div class="kpi-card"><p class="kpi-value"><?php echo $avgLifespan; ?>%</p><h3>Vida Útil Média</h3></div>
+                <div class="kpi-card"><p class="kpi-value"><?php echo $monitoredVehicles; ?></p><h3>Veículos Monitorados</h3></div>
+            </section>
 
+            <!-- Tabela de Veículos para Gerenciamento -->
+            <section class="table-container" style="margin-top: 2rem;">
+                <h2 class="section-title">Frota de Veículos</h2>
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Prefixo</th>
+                            <th>Placa</th>
+                            <th>Nome/Modelo</th>
+                            <th style="text-align: center;">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vehicleTableBody">
+                        <?php if (empty($vehicles)): ?>
+                            <tr><td colspan="4" style="text-align: center;">Nenhum veículo encontrado.</td></tr>
+                        <?php else: ?>
+                            <?php foreach($vehicles as $vehicle): ?>
+                            <tr data-vehicle-id="<?php echo $vehicle['id']; ?>">
+                                <td><?php echo htmlspecialchars($vehicle['prefix']); ?></td>
+                                <td><?php echo htmlspecialchars($vehicle['plate']); ?></td>
+                                <td><?php echo htmlspecialchars($vehicle['name']); ?></td>
+                                <td class="actions" style="text-align: center;">
+                                    <a href="#" class="manage-tires" title="Gerenciar Pneus deste Veículo">
+                                        <i class="fas fa-dot-circle"></i> Gerenciar Pneus
+                                    </a>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </section>
+        </div>
     </main>
 
-    <script src="<?php echo BASE_URL; ?>/assets/js/dashboard.js"></script>
+    <!-- Modal para o diagrama de pneus -->
+    <div id="vehicleTireModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2 id="modalVehicleName"></h2>
+                <span class="modal-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="tire-diagram-container"></div>
+                <div id="tire-actions">
+                    <h4>Ações (selecione 2 pneus para rodízio)</h4>
+                    <button data-action="rotate_internal" class="btn-submit" disabled>Rodízio Interno</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>const BASE_URL = "<?php echo BASE_URL; ?>";</script>
+    <script src="<?php echo BASE_URL; ?>/assets/js/tire_management.js"></script>
+    <script src="<?php echo BASE_URL; ?>/assets/js/admin_dashboard.js" defer></script>
 </body>
 </html>

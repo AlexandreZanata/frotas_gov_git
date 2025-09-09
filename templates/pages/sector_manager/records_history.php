@@ -84,6 +84,6 @@
 
         <script src="<?php echo BASE_URL; ?>/assets/js/dashboard.js" defer></script>
 
-    <script src="<?php echo BASE_URL; ?>/assets/js/admin_dashboard.js"></script>
+
 </body>
 </html>

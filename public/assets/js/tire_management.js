@@ -19,9 +19,10 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const vehicleRow = manageButton.closest('tr');
             currentVehicleId = vehicleRow.dataset.vehicleId;
-            const vehicleName = vehicleRow.cells[0].textContent;
+            const vehicleName = vehicleRow.cells[2].textContent; // Coluna Nome/Modelo
+            const vehiclePrefix = vehicleRow.cells[0].textContent; // Coluna Prefixo
             
-            modalVehicleName.textContent = `Gerenciar Pneus: ${vehicleName}`;
+            modalVehicleName.textContent = `Gerenciar Pneus: ${vehiclePrefix} - ${vehicleName}`;
             openVehicleModal(currentVehicleId);
         }
     });
@@ -40,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await response.json();
             if (data.success) {
-                renderTireDiagram(data.vehicleType || 'truck_4x2', data.tires || []);
+                renderTireDiagram(data.layoutConfig, data.tires || []);
             } else {
                 diagramContainer.innerHTML = `<p class="error">${data.message || 'Erro ao carregar.'}</p>`;
             }
@@ -49,17 +50,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderTireDiagram(type, tires) {
-        diagramContainer.innerHTML = '';
-        const diagram = document.createElement('div');
-        diagram.className = `tire-diagram ${type}`;
-        const tireMap = new Map(tires.map(t => [t.position, t]));
-        const positions = {
-            car: ['front_left', 'front_right', 'rear_left', 'rear_right'],
-            truck_4x2: ['front_left', 'front_right', 'rear_left_outer', 'rear_left_inner', 'rear_right_outer', 'rear_right_inner']
-        };
+// Substitua a função renderTireDiagram existente por esta
+    function renderTireDiagram(layoutConfig, tires) {
+        diagramContainer.innerHTML = ''; // Limpa o conteúdo anterior
+        if (!layoutConfig || !layoutConfig.positions || layoutConfig.positions.length === 0) {
+            diagramContainer.innerHTML = '<p class="error">Configuração de layout inválida ou não encontrada para este veículo.</p>';
+            return;
+        }
 
-        (positions[type] || []).forEach(pos => {
+        const diagram = document.createElement('div');
+        diagram.className = 'tire-diagram';
+
+        // Aplica estilos CSS customizados vindos do banco de dados, se existirem
+        if (layoutConfig.css) {
+            Object.assign(diagram.style, layoutConfig.css);
+        }
+
+        const tireMap = new Map(tires.map(t => [t.position, t]));
+        
+        // Cria um elemento de pneu para cada posição definida no layout
+        layoutConfig.positions.forEach(pos => {
             const tireData = tireMap.get(pos);
             const tireEl = document.createElement('div');
             tireEl.className = 'tire';
@@ -89,10 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleTireClick(e) {
         const tireEl = e.currentTarget;
         const position = tireEl.dataset.position;
-
-        // Não permite selecionar posições vazias
         if (!tireEl.dataset.tireId) return;
-
         tireEl.classList.toggle('selected');
         
         const index = selectedTires.indexOf(position);
@@ -106,8 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function updateActionButtons() {
         const rotateBtn = document.querySelector('[data-action="rotate_internal"]');
-        rotateBtn.disabled = selectedTires.length !== 2;
-        // Lógica para outros botões aqui
+        if(rotateBtn) rotateBtn.disabled = selectedTires.length !== 2;
     }
 
     function resetSelection() {
@@ -139,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await response.json();
                 if(result.success) {
                     alert(result.message);
-                    openVehicleModal(currentVehicleId); // Recarrega o diagrama
+                    openVehicleModal(currentVehicleId);
                 } else {
                     alert(`Erro: ${result.message}`);
                 }

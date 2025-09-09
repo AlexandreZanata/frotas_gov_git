@@ -5,6 +5,7 @@
     <title>Estoque de Pneus</title>
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/admin_dashboard.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/manage_users.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
 <body>
     <?php include_once __DIR__ . '/../../layouts/sector_manager_sidebar.php'; ?>
@@ -47,6 +48,6 @@
     </main>
     <script src="<?php echo BASE_URL; ?>/assets/js/tire_management.js"></script>
     <script src="<?php echo BASE_URL; ?>/assets/js/dashboard.js" defer></script>
-    <script src="<?php echo BASE_URL; ?>/assets/js/admin_dashboard.js" defer></script>
+    
 </body>
 </html>

@@ -83,3 +83,101 @@
 }
 .tire[data-position^="rear_left"] { justify-self: end; }
 .tire[data-position^="rear_right"] { justify-self: start; }
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.btn-action-table {
+    background: none; border: 1px solid #cbd5e1; padding: 5px 10px;
+    border-radius: 5px; cursor: pointer; display: inline-flex;
+    align-items: center; gap: 5px; font-weight: 600;
+}
+.btn-action-table:hover { background-color: #f1f5f9; }
+
+.badge-layout {
+    background-color: #e0e7ff; color: #4338ca; padding: 3px 8px;
+    border-radius: 4px; font-size: 0.8em; font-family: monospace;
+}
+
+td.editable { cursor: pointer; position: relative; }
+td.editable:hover::after {
+    content: '\f044'; /* Ícone de lápis do FontAwesome */
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    margin-left: 8px;
+    color: var(--primary-color);
+}
+
+.position-buttons-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.btn-position {
+    background-color: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-position:hover {
+    background-color: #e2e8f0;
+    border-color: #cbd5e1;
+}
+
+/* --- Lógica de Layout Espacial com Grid Areas --- */
+
+.tire-diagram {
+    display: grid;
+    gap: 15px 30px; /* Espaçamento padrão entre pneus */
+    justify-content: center;
+    align-content: center;
+    padding: 20px;
+    min-height: 300px;
+}
+
+/* Define a área de cada pneu com base no seu data-position */
+.tire[data-position="front_left"] { grid-area: fl; }
+.tire[data-position="front_right"] { grid-area: fr; }
+.tire[data-position="rear_left"] { grid-area: rl; }
+.tire[data-position="rear_right"] { grid-area: rr; }
+.tire[data-position="rear_left_outer"] { grid-area: rlo; }
+.tire[data-position="rear_left_inner"] { grid-area: rli; }
+.tire[data-position="rear_right_outer"] { grid-area: rro; }
+.tire[data-position="rear_right_inner"] { grid-area: rri; }
+.tire[data-position="steer"] { grid-area: steer; }
+/* Adicione outras posições aqui se necessário */
+
+/* Define o "desenho" espacial para cada layout */
+.tire-diagram[data-layout-key="car_2x2"] {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+        "fl fr"
+        "rl rr";
+}
+
+.tire-diagram[data-layout-key="truck_4x2"] {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+        "fl fr"
+        "rlo rro"
+        "rli rri";
+}
+
+.tire-diagram[data-layout-key="moto_1x1"] {
+    grid-template-columns: 1fr;
+    justify-items: center; /* Centraliza os pneus na coluna */
+    grid-template-areas:
+        "fl"
+        "rl"; /* Usando front_left e rear_left como padrão para moto */
+}

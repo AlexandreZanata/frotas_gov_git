@@ -285,14 +285,23 @@ $router->post('admin/settings/update', 'AdminSettingsController@update');
 | Rotas do Módulo de Pneus
 |--------------------------------------------------------------------------
 */
+// Páginas principais do módulo
 $router->get('tires/dashboard', 'TireController@dashboard');
-$router->get('tires/vehicles', 'TireController@vehicles');
 $router->get('tires/stock', 'TireController@stock');
-$router->post('tires/stock/store', 'TireController@storeTireInStock');
+$router->get('tires/settings', 'TireController@settings');
 
-// Endpoints AJAX para interatividade
+// Ações (Formulários POST)
+$router->post('tires/stock/store', 'TireController@storeTireInStock');
+$router->post('tires/settings/store', 'TireController@storeSettings');
+
+// Endpoints AJAX para interatividade da interface
 $router->post('tires/ajax/get-vehicle-layout', 'TireController@ajax_get_vehicle_layout');
 $router->post('tires/ajax/perform-action', 'TireController@ajax_perform_action');
+$router->get('tires/ajax/get-layouts', 'TireController@ajax_get_layouts');
+$router->post('tires/ajax/store-layout', 'TireController@ajax_store_layout');
+$router->post('tires/ajax/delete-layout', 'TireController@ajax_delete_layout');
+$router->post('tires/ajax/update-category-layout', 'TireController@ajax_update_category_layout');
+$router->get('tires/ajax_get_rule_details', 'TireController@ajax_get_rule_details');
 
 /*
 |--------------------------------------------------------------------------

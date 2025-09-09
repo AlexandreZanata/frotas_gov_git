@@ -9,8 +9,7 @@ $current_uri = $_SERVER['REQUEST_URI'];
     <nav class="sidebar-nav">
         <ul>
             
-            <!-- A classe 'active' é adicionada se a URI contém 'dashboard' -->
-            <li class="<?php echo (strpos($current_uri, 'dashboard') !== false || strpos($current_uri, 'vehicles/status') !== false) ? 'active' : ''; ?>">
+            <li class="<?php echo $isDashboardActive ? 'active' : ''; ?>">
                 <a href="<?php echo BASE_URL; ?>/dashboard"><i class="fas fa-tachometer-alt"></i> Painel</a>
             </li>
             <li class="<?php echo (strpos($current_uri, 'profile') !== false) ? 'active' : ''; ?>">

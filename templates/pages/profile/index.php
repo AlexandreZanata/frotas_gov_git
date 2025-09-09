@@ -6,9 +6,9 @@
     <title>Meu Perfil - Frotas Gov</title>
 
     <!-- CSS específicos da página -->
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/profile.css" />
+         <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/profile.css" />
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/admin_dashboard.css" />
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/sidebar_styles.css">
+
 
 
     <!-- Ícones e libs -->
@@ -165,11 +165,8 @@
     <script src="<?php echo BASE_URL; ?>/assets/js/profile.js"></script>
     <script src="<?php echo BASE_URL; ?>/assets/js/main.js"></script>
 
-    <!-- JS global da sidebar (controla abrir/fechar no desktop e mobile) -->
-    <script src="<?php echo BASE_URL; ?>/assets/js/sidebar_toggle.js" defer></script>
-
     <!-- Se necessários para outras funcionalidades globais -->
     <script src="<?php echo BASE_URL; ?>/assets/js/dashboard.js" defer></script>
-    <script src="<?php echo BASE_URL; ?>/assets/js/admin_dashboard.js" defer></script>
+    
 </body>
 </html>

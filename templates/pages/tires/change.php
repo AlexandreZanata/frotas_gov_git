@@ -67,6 +67,6 @@
     <script> const BASE_URL = "<?php echo BASE_URL; ?>"; </script>
     <script src="<?php echo BASE_URL; ?>/assets/js/tire_management.js"></script>
     <script src="<?php echo BASE_URL; ?>/assets/js/dashboard.js" defer></script>
-    <script src="<?php echo BASE_URL; ?>/assets/js/admin_dashboard.js" defer></script>
+    
 </body>
 </html>

@@ -125,6 +125,6 @@
         const CURRENT_USER_SECRETARIAT_ID = <?php echo $_SESSION['user_secretariat_id'] ?? 'null'; ?>;
     </script>
     <script src="<?php echo BASE_URL; ?>/assets/js/oil_stock.js"></script>
-    <script src="<?php echo BASE_URL; ?>/assets/js/admin_dashboard.js"></script>
+    <script src="<?php echo BASE_URL; ?>/assets/js/dashboard.js" defer></script>
 </body>
 </html>

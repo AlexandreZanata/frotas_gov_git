@@ -1,0 +1,16 @@
+# Arquivos de configuração com senhas e chaves de API
+.env
+config.php
+conexao.php # Ou qualquer que seja o nome do seu arquivo de conexão com o banco
+
+# Pasta do Composer (gerenciador de dependências do PHP)
+/vendor/
+
+# Arquivos de log e cache
+*.log
+/cache/
+/logs/
+
+# Arquivos de sistema operacional
+.DS_Store
+Thumbs.db
