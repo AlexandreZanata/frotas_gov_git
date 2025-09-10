@@ -25,17 +25,21 @@ public function index()
         if (isset($_SESSION['user_role_id'])) {
             $role_id = $_SESSION['user_role_id'];
 
-            // Lógica ajustada para mais clareza
+            // Lógica de redirecionamento baseada no role_id
             if ($role_id == 1) { // Administrador Geral
                 $this->loadDashboard(null); // Passa null para não filtrar por secretaria
                 return;
             } elseif ($role_id == 2) { // Gestor Setorial
                 $this->loadDashboard($_SESSION['user_secretariat_id']);
                 return;
+            } else { // Outros tipos de usuários (3, 4, etc.)
+                // Redireciona para a interface de usuário padrão, não o dashboard de tires
+                header('Location: ' . BASE_URL . '/user/dashboard');
+                exit();
             }
         }
         
-        // Para outras roles (como motorista), carrega o dashboard padrão
+        // Fallback - carrega o dashboard padrão (não deve chegar aqui normalmente)
         require_once __DIR__ . '/../../templates/pages/dashboard.php';
 
     } catch (PDOException $e) {

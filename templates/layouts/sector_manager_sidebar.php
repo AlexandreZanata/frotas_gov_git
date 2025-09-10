@@ -16,11 +16,14 @@ $current_uri = $_SERVER['REQUEST_URI'];
                 <a href="<?php echo BASE_URL; ?>/profile"><i class="fas fa-user-circle"></i> Meu Perfil</a>
             </li>
 
+
+            <?php if (isset($_SESSION['user_role_id']) && in_array($_SESSION['user_role_id'], [1, 2])):?>
             <li class="<?php echo (strpos($current_uri, 'notifications') !== false) ? 'active' : ''; ?>">
                 <a href="<?php echo BASE_URL; ?>/sector-manager/notifications">
                     <i class="fas fa-bell"></i> Notificações
                     </a>
             </li>
+            <?php endif; ?>
             
             <?php if ($_SESSION['user_role_id'] == 4): ?>
             <li class="<?php echo (strpos($current_uri, 'runs/history') !== false) ? 'active' : ''; ?>">
@@ -76,10 +79,14 @@ $current_uri = $_SERVER['REQUEST_URI'];
                 <a href="<?php echo BASE_URL; ?>/sector-manager/oil-change"><i class="fas fa-oil-can"></i> Troca de Óleo</a>
             </li>
             <?php endif; ?>
+            
 
+
+            <?php if (isset($_SESSION['user_role_id']) && in_array($_SESSION['user_role_id'], [1, 2])):?>
             <li class="<?php echo (strpos($current_uri, 'tires') !== false) ? 'active' : ''; ?>">
                 <a href="<?php echo BASE_URL; ?>/tires/dashboard"><i class="fas fa-dot-circle"></i> Gestão de Pneus</a>
             </li>
+            <?php endif; ?>
 
             <?php $isDiarioActive = (strpos($current_uri, 'runs') !== false && strpos($current_uri, 'runs/history') === false);?>
             <li class="<?php echo $isDiarioActive ? 'active' : ''; ?>">

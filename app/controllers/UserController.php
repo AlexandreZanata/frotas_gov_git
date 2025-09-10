@@ -99,4 +99,40 @@ class UserController
             show_error_page('Erro Interno', 'Não foi possível processar seu cadastro no momento. Tente novamente mais tarde.', 500);
         }
     }
+    
+    /**
+     * Exibe o dashboard do usuário comum
+     */
+    public function dashboard()
+    {
+        Auth::checkAuthentication();
+        
+        // Obtém dados do usuário atual
+        $userId = $_SESSION['user_id'];
+        
+        try {
+            // Cria a conexão ao banco de dados
+            $database = new Database();
+            $conn = $database->getConnection();
+            
+            // Obtém informações do usuário
+            $stmt = $conn->prepare("
+                SELECT u.*, r.name as role_name 
+                FROM users u
+                LEFT JOIN roles r ON u.role_id = r.id
+                WHERE u.id = ?
+            ");
+            $stmt->execute([$userId]);
+            $userData = $stmt->fetch();
+            
+            // Passa as variáveis necessárias para a view
+            $userName = $userData['name'] ?? 'Usuário';
+            $roleName = $userData['role_name'] ?? 'Usuário do Sistema';
+            
+            // Carrega a view do dashboard do usuário
+            require_once __DIR__ . '/../../templates/pages/user/dashboard.php';
+        } catch (PDOException $e) {
+            show_error_page('Erro ao Carregar Dashboard', 'Não foi possível carregar os dados do painel. Detalhes: ' . $e->getMessage(), 500);
+        }
+    }
 }

@@ -7,6 +7,9 @@ if (isset($_SESSION['user_role_id'])) {
         include_once __DIR__ . '/sector_manager_sidebar.php';
     } elseif ($_SESSION['user_role_id'] == 2) {
         include_once __DIR__ . '/sector_manager_sidebar.php';
+    } else {
+        // Para usuários com role_id > 2 (motoristas, etc.)
+        include_once __DIR__ . '/driver_sidebar.php';
     }
 }
 ?>

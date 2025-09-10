@@ -33,26 +33,35 @@ class Database
         // Limpa qualquer conexão anterior
         $this->conn = null;
 
-        // DSN (Data Source Name) - String de conexão para o PDO
-        $dsn = 'mysql:host=' . $this->host . ';dbname=' . $this->db_name . ';charset=utf8mb4';
-
-        // Opções para a conexão PDO
-        $options = [
-            // Lança exceções em caso de erro, o que é mais fácil de tratar
-            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-            // Retorna os resultados como arrays associativos (ex: $row['name'])
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            // Desativa a emulação de prepared statements, usando o modo nativo do MySQL
-            PDO::ATTR_EMULATE_PREPARES   => false,
-        ];
-
         try {
+            // Verificar se o driver PDO_MYSQL está disponível
+            if (!extension_loaded('pdo_mysql')) {
+                throw new Exception("Extensão PDO_MYSQL não está habilitada no PHP.");
+            }
+
+            // DSN (Data Source Name) - String de conexão para o PDO
+            $dsn = 'mysql:host=' . $this->host . ';dbname=' . $this->db_name . ';charset=utf8mb4';
+            
+            // Opções para a conexão PDO
+            $options = [
+                // Lança exceções em caso de erro, o que é mais fácil de tratar
+                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                // Retorna os resultados como arrays associativos (ex: $row['name'])
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                // Desativa a emulação de prepared statements, usando o modo nativo do MySQL
+                PDO::ATTR_EMULATE_PREPARES   => false,
+            ];
+
             // Tenta criar uma nova instância da classe PDO para conectar
             $this->conn = new PDO($dsn, $this->username, $this->password, $options);
+            return $this->conn;
+            
         } catch (PDOException $e) {
             // Se a conexão falhar, exibe uma mensagem de erro genérica
-            // Em um ambiente de produção, você deveria registrar esse erro em um log
             echo 'Erro de Conexão: ' . $e->getMessage();
+            return null;
+        } catch (Exception $e) {
+            echo 'Erro: ' . $e->getMessage();
             return null;
         }
 

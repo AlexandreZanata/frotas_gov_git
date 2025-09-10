@@ -46,7 +46,17 @@ class Router
             if (class_exists($controller)) {
                 $controllerInstance = new $controller();
                 if (method_exists($controllerInstance, $action)) {
+                    // Armazena o output buffer para entregar a resposta apropriada
+                    ob_start();
                     $controllerInstance->$action();
+                    $content = ob_get_clean();
+                    
+                    // Verifica se é uma requisição AJAX para determinar o tipo de resposta
+                    if (is_ajax_request()) {
+                        echo $content;
+                    } else {
+                        echo $content;
+                    }
                 } else {
                     echo "Método {$action} não encontrado no controller {$controller}.";
                 }

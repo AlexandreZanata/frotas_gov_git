@@ -18,3 +18,12 @@ function show_error_page($title, $message, $httpCode = 400)
     $errorController->show($title, $message, $httpCode);
     exit(); // Encerra o script após mostrar o erro
 }
+
+/**
+ * Verifica se a requisição atual é uma requisição AJAX.
+ * @return bool True se for AJAX, false caso contrário.
+ */
+function is_ajax_request() {
+    return (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
+            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
+}
